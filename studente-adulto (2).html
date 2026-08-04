@@ -1,0 +1,864 @@
+<style>:root{
+  --bg: #14121A;
+  --panel: #654834ad;
+  --panel-2: #EEEE;
+  --line: #856106;
+  --ink: #222;
+  --ink-dim: goldenrod;
+  --gold: #C9A24B;
+  --numen: #4BC98F;
+  --bad: #D4574F;
+  font-family: "Georgia", "Iowan Old Style", serif;
+}
+*{box-sizing:border-box;}
+h1{text-align:center; font-weight:400; letter-spacing:2px; font-size:28px; margin:0 0 4px; color:var(--gold); font-family:magic;}
+.subtitle{text-align:center; color:var(--ink-dim); font-size:13px; letter-spacing:1px; margin-bottom:32px; font-family:"Helvetica Neue", Arial, sans-serif;}
+.wrap{max-width:820px; margin:0 auto;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:28px 32px 32px; margin-bottom:24px;}
+.panel h2{font-size:32px; letter-spacing:1px; font-variant:small-caps; color:var(--ink-dim); font-family:magic; font-weight:600; margin:0 0 20px; display:flex; align-items:center; gap:10px;}
+.panel h2::after{content:""; flex:1; height:1px; background:var(--line);}
+label{display:block; font-family:"Helvetica Neue", Arial, sans-serif; font-size:14px; letter-spacing:0; text-transform:uppercase; color:var(--ink); margin:18px 0 6px;}
+label:first-of-type{margin-top:0;}
+input, select, textarea{width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:7px; color:var(--ink); padding:11px 12px; font-size:14px; font-family:"Helvetica Neue", Arial, sans-serif;}
+textarea{font-family:"SF Mono", "Menlo", monospace; resize:vertical; min-height:200px; line-height:1.5;}
+input:focus, select:focus, textarea:focus{outline:none; border-color:var(--gold);}
+select{appearance:none; -webkit-appearance:none; cursor:pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px; background-repeat:no-repeat;}
+.checkbox-row{display:flex; align-items:center; gap:10px; margin:16px 0 0;}
+.checkbox-row input{width:18px; height:18px; accent-color:var(--gold);}
+.checkbox-row label{margin:0; text-transform:none; font-size:13px;}
+fieldset{border:none; padding:0; margin:22px 0 0; border-top:1px dashed var(--line); padding-top:18px;}
+fieldset legend{font-family:"Helvetica Neue", Arial, sans-serif; font-size:13px; letter-spacing:.5px; text-transform:uppercase; color:var(--ink-dim); padding:0 6px 0 0;}
+.stat-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;}
+.stat-grid.four{grid-template-columns:repeat(4, 1fr);}
+.stat-field label{font-size:11px; margin:0 0 4px;}
+.rules-hint{font-family:"Helvetica Neue", Arial, sans-serif; font-size:13px; color:var(--ink-dim); margin-top:8px; line-height:1.5; background:#0002; border:1px solid var(--line); border-radius:6px; padding:10px 12px;}
+.sapienza-slot{margin-top:16px; padding-top:14px; border-top:1px dashed var(--line);}
+.sapienza-slot label{margin-top:0;}
+.livello-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:8px 0 0;}
+.livello-row span{font-family:"Helvetica Neue", Arial, sans-serif; font-size:13px; color:var(--ink); flex:1;}
+.livello-row select{width:150px;}
+.checklist{font-family:"Helvetica Neue", Arial, sans-serif; font-size:14px; line-height:1.6; background:#2A1518; border:1px solid var(--bad); border-radius:8px; padding:16px 18px; margin-bottom:22px; color:#F2B8B4;}
+.checklist b{display:block; margin-bottom:8px;}
+.checklist ul{margin:0; padding-left:20px;}
+.checklist li{margin-bottom:6px;}
+.generate-btn-wrap{text-align:center; margin:24px 0 8px;}
+button{font-family:"Helvetica Neue", Arial, sans-serif; font-size:14px; letter-spacing:0; background:var(--gold); color:#1A1620; border:none; border-radius:7px; padding:13px 26px; cursor:pointer; font-weight:600; transition:opacity .15s ease;}
+button:hover{opacity:.85;}
+button.secondary{background:transparent; color:var(--ink-dim); border:1px solid var(--line);}
+.output-actions{display:flex; gap:10px; margin-bottom:14px; align-items:center; flex-wrap:wrap;}
+#output_bio, #output_valori{width:100%; min-height:260px; background:#100E17; border:1px solid var(--line); border-radius:8px; color:#C7C1DD; font-family:"SF Mono", "Menlo", monospace; font-size:12px; line-height:1.6; padding:16px; white-space:pre; overflow:auto; resize:vertical;}
+.copied-msg{font-family:"Helvetica Neue", Arial, sans-serif; font-size:12px; color:var(--numen); margin-left:4px; opacity:0; transition:opacity .2s ease;}
+.copied-msg.show{opacity:1;}
+.copy-fallback-hint{font-family:"Helvetica Neue", Arial, sans-serif; font-size:12px; color:var(--ink-dim); margin-top:8px; line-height:1.4; display:none;}
+.copy-fallback-hint.show{display:block;}
+.link-scarica-box{margin-top:10px;}
+.link-scarica{display:inline-block; font-family:"Helvetica Neue", Arial, sans-serif; font-size:13px; color:var(--gold); text-decoration:underline;}
+.output-wrap{display:none;}
+.output-wrap.show{display:block;}
+.error-box{display:none; background:#2A1518; border:1px solid var(--bad); border-radius:8px; padding:16px 18px; margin-bottom:22px; font-family:"Helvetica Neue", Arial, sans-serif; font-size:13px; color:#F2B8B4;}
+.error-box.show{display:block;}
+.error-box ul{margin:8px 0 0; padding-left:20px;}
+.error-box li{margin-bottom:4px;}
+.fixed-value{font-family:"Helvetica Neue", Arial, sans-serif; font-size:13px; color:var(--ink-dim); padding:11px 12px; background:var(--panel-2); border:1px solid var(--line); border-radius:7px;}
+</style>
+
+<div class="foglio">
+<h1>Studente &#8594; Adulto</h1>
+<div class="subtitle">Estrae ciò che si porta dietro, ti fa scegliere il resto senza vincoli</div>
+
+<div class="wrap">
+
+  <div class="panel">
+    <h2>1. Vecchia scheda Studente</h2>
+    <p class="rules-hint">Incolla qui sotto il codice della vecchia scheda Studente. Da qui vengono presi automaticamente: dati anagrafici, Storia/Aspetto/Carattere/Relazioni, Bagaglio e Conoscenze (portati così come sono, con Punti Post spostato nel Bagaglio), Scuola/Casa, e il calcolo di partenza di Popolarità/Virtuoso/Sinistro.</p>
+
+    <label for="input_vecchia">Codice della vecchia scheda Studente</label>
+    <textarea id="input_vecchia" placeholder="Incolla qui il codice della vecchia scheda Studente..."></textarea>
+
+    <div class="error-box" id="error_box">
+      <b>Non riesco a leggere alcune parti della scheda:</b>
+      <ul id="error_list"></ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>2. Scelte del nuovo PG Adulto</h2>
+    <p class="rules-hint">Questa parte <b>non ha vincoli né somme obbligate</b>: inserisci i valori che hai già deciso per il PG Adulto, il generatore li userà così come sono senza validarli.</p>
+
+    <label for="categoria">Categoria Magica</label>
+    <select id="categoria">
+      <option value="">— seleziona —</option>
+      <option value="Acumen">Acumen</option>
+      <option value="Animus">Animus</option>
+      <option value="Ars">Ars</option>
+      <option value="Numen">Numen</option>
+      <option value="Sensus">Sensus</option>
+      <option value="Voluntas">Voluntas</option>
+    </select>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="intracciabile">
+      <label for="intracciabile">PG Intracciabile (la Categoria Magica reale resta segreta in scheda)</label>
+    </div>
+
+    <label for="mestiere">Mestiere</label>
+    <select id="mestiere">
+      <option value="">— seleziona —</option>
+      <option value="Spezzaincantesimi">Spezzaincantesimi</option>
+      <option value="Auror">Auror</option>
+      <option value="Pozionista">Pozionista</option>
+      <option value="Medimago">Medimago</option>
+      <option value="Erbologo">Erbologo</option>
+      <option value="Magizoologo">Magizoologo</option>
+      <option value="Divinatore">Divinatore</option>
+      <option value="Difensore">Difensore</option>
+      <option value="Diplomatico">Diplomatico</option>
+      <option value="Giornalista">Giornalista</option>
+      <option value="Locandiere/Cameriere">Locandiere/Cameriere</option>
+      <option value="Negoziante">Negoziante</option>
+      <option value="Mestiere Libero">Mestiere Libero</option>
+    </select>
+
+    <fieldset>
+      <legend>Parametri Magici</legend>
+      <div class="rules-hint">Totale di riferimento (al netto di eventuali bonus extra tipo "+1"): 75 punti. Non è un controllo automatico, è solo un promemoria.</div>
+      <div class="rules-hint">Se il PG ha guadagnato Parametri extra grazie agli anni di gioco, scrivi direttamente nel campo desiderato il valore nella forma "X+Y" (es. 18+1): non serve sommarlo a mano.</div>
+      <div class="stat-grid">
+        <div class="stat-field"><label for="acume">Acume</label><input type="text" id="acume" placeholder="es. 18 o 18+1"></div>
+        <div class="stat-field"><label for="empatia">Empatia</label><input type="text" id="empatia" placeholder="es. 18 o 18+1"></div>
+        <div class="stat-field"><label for="percezione">Percezione</label><input type="text" id="percezione" placeholder="es. 18 o 18+1"></div>
+        <div class="stat-field"><label for="potenza">Potenza</label><input type="text" id="potenza" placeholder="es. 18 o 18+1"></div>
+        <div class="stat-field"><label for="tecnica">Tecnica</label><input type="text" id="tecnica" placeholder="es. 18 o 18+1"></div>
+        <div class="stat-field"><label for="volonta">Volontà</label><input type="text" id="volonta" placeholder="es. 18 o 18+1"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Parametri Fisici</legend>
+      <div class="rules-hint">Totale di riferimento (al netto di eventuali bonus extra): 50 punti. Non è un controllo automatico, è solo un promemoria.</div>
+      <div class="stat-grid four">
+        <div class="stat-field"><label for="destrezza">Destrezza</label><input type="number" id="destrezza"></div>
+        <div class="stat-field"><label for="fatica">Fatica</label><input type="number" id="fatica"></div>
+        <div class="stat-field"><label for="resistenza">Resistenza</label><input type="number" id="resistenza"></div>
+        <div class="stat-field"><label for="salute">Salute (valore base, non x5)</label><input type="number" id="salute"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Parametri Sociali</legend>
+      <div class="stat-grid">
+        <div class="stat-field">
+          <label for="dialettica">Dialettica</label>
+          <input type="text" id="dialettica">
+        </div>
+        <div class="stat-field"><label for="popolarita">Popolarità</label><input type="number" id="popolarita"></div>
+        <div class="stat-field"><label for="virtuoso">Virtuoso</label><input type="text" id="virtuoso"></div>
+      </div>
+      <div class="stat-grid" style="margin-top:10px">
+        <div class="stat-field"><label for="sinistro">Sinistro</label><input type="text" id="sinistro"></div>
+        <div class="stat-field">
+          <label>Prestigio</label>
+          <div class="fixed-value">0 (si guadagna giocando)</div>
+        </div>
+      </div>
+      <div class="rules-hint" id="rules_hint_sociali">Dialettica passa invariata da Studente ad Adulto (se era 3, resta 3). Popolarità/Virtuoso/Sinistro vengono precompilati dalla vecchia scheda Studente (8 + arrotondamento per eccesso di Popolarità/10; arrotondamento per eccesso di Bontà o Malvagità /3). Tutti e quattro restano comunque modificabili a mano.</div>
+    </fieldset>
+
+    <fieldset id="sapienze_fieldset">
+      <legend>Sapienze</legend>
+      <div class="rules-hint">Nessun limite di numero, tipo o Livello: aggiungi tutte le Sapienze che vuoi, coi Livelli che vuoi — comprese quelle guadagnate con la Borsa di Studio.</div>
+    </fieldset>
+
+    <div class="generate-btn-wrap">
+      <button id="btn_converti">Genera scheda Adulto</button>
+    </div>
+  </div>
+
+  <div class="output-wrap" id="wrap_checklist">
+    <div class="checklist" id="checklist_box">
+      <b>Promemoria:</b>
+      <ul id="checklist_list"></ul>
+    </div>
+  </div>
+
+  <div class="output-wrap" id="wrap_bio">
+    <div class="panel">
+      <h2>Scheda Biografica (Adulto)</h2>
+      <div class="output-actions">
+        <button id="btn_copia_bio">Copia codice</button>
+        <button id="btn_scarica_bio" class="secondary">Scarica .html</button>
+        <span class="copied-msg" id="msg_copiato_bio">Copiato &#10003;</span>
+      </div>
+      <textarea id="output_bio" readonly spellcheck="false"></textarea>
+      <div class="copy-fallback-hint" id="hint_fallback_bio">La copia automatica non è disponibile in questo contesto. Il testo qui sopra è già selezionato: premi Ctrl+C (o Cmd+C su Mac) per copiarlo manualmente.</div>
+      <div id="box_link_bio" class="link-scarica-box"></div>
+    </div>
+  </div>
+
+  <div class="output-wrap" id="wrap_valori">
+    <div class="panel">
+      <h2>Scheda Punti/Sapienze (Adulto)</h2>
+      <div class="output-actions">
+        <button id="btn_copia_valori">Copia codice</button>
+        <button id="btn_scarica_valori" class="secondary">Scarica .html</button>
+        <span class="copied-msg" id="msg_copiato_valori">Copiato &#10003;</span>
+      </div>
+      <textarea id="output_valori" readonly spellcheck="false"></textarea>
+      <div class="copy-fallback-hint" id="hint_fallback_valori">La copia automatica non è disponibile in questo contesto. Il testo qui sopra è già selezionato: premi Ctrl+C (o Cmd+C su Mac) per copiarlo manualmente.</div>
+      <div id="box_link_valori" class="link-scarica-box"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script type="text/javascript">
+function init(){
+
+var CLICK = 'cli' + 'ck';
+var AMP = String.fromCharCode(38);
+var DOLLAR = String.fromCharCode(36);
+
+var CATEGORIA_CLASS = {
+  "Acumen": "schedaacumen",
+  "Animus": "schedaanimus",
+  "Ars": "schedaars",
+  "Numen": "schedanumen",
+  "Sensus": "schedasensus",
+  "Voluntas": "schedavoluntas"
+};
+
+var CASE_DA_CLASSE_VECCHIA = {
+  "schedagrifo": "Hogwarts, Grifondoro",
+  "schedacorvo": "Hogwarts, Corvonero",
+  "schedatasso": "Hogwarts, Tassorosso",
+  "schedaserpe": "Hogwarts, Serpeverde"
+};
+
+var SAPIENZE = {
+  "Arcaica": { classe:"m-arc", titolo:"Sapienza Arcaica", conoscenze:["Appare Vestigium","Avensegium","Esorcista","Spezzaincantesimi","Tracciante"] },
+  "Difensiva": { classe:"m-dif", titolo:"Sapienza Difensiva", conoscenze:["Energia Difensiva","Protego Maxima","Protego Totalum","Protego Volantis","Repello Inimicum"] },
+  "Divinatoria": { classe:"m-veg", titolo:"Sapienza Divinatoria", conoscenze:["Visione del Passato","Proiezione Astrale","Psicometria del Futuro","Chiaroveggenza","Psicometria del Passato"] },
+  "Elementale": { classe:"m-ele", titolo:"Sapienza Elementale", conoscenze:["Aqua Eructo","Dominusterra","Incendio Maxima","Manipolo","Ventus Maxima"] },
+  "Erbologica": { classe:"m-erb", titolo:"Sapienza Erbologica", conoscenze:["Erborista","Amico delle Piante","Custode delle Piante","Coltivatore di Piante","Pax"] },
+  "Magizoologica": { classe:"m-cre", titolo:"Sapienza Magizoologica", conoscenze:["Amico delle Creature","Addestratore di Creature","Custode delle Creature","Allevatore di Creature","Imposium"] },
+  "Medimagica": { classe:"m-med", titolo:"Sapienza Medimagica", conoscenze:["Diagnosta","Terapista","Chirurgo","Emendo","Vulnera Sanentur"] },
+  "Mentale": { classe:"m-men", titolo:"Sapienza Mentale", conoscenze:["Desiderium","Dissimulo","Legilimens","Oblivion","Occlumanzia"] },
+  "Offensiva": { classe:"m-off", titolo:"Sapienza Offensiva", conoscenze:["Ad Caelum","Ardor","Bombarda Maxima","Confractus","Energia Offensiva"] },
+  "Oscura": { classe:"m-osc", titolo:"Sapienza Oscura", conoscenze:["Ardemonio","Damnum","Dolohoferio","Ritualista Oscuro","Sectumsempra"] },
+  "Pozionistica": { classe:"m-poz", titolo:"Sapienza Pozionistica", conoscenze:["Speziale","Chimico","Calderaio","Tocco Magico","Distillatore"] },
+  "Trasfigurativa": { classe:"m-tra", titolo:"Sapienza Trasfigurativa", conoscenze:["Commutatio","Evanesco","Evocatio","Locomotor","Verto"] },
+  "Rapidità": { classe:"s-fis", titolo:"Sapienza Fisica — Rapidità", tipo:"fisica", conoscenze:["Livello"] },
+  "Prestanza": { classe:"s-fis", titolo:"Sapienza Fisica — Prestanza", tipo:"fisica", conoscenze:["Livello"] },
+  "Resilienza": { classe:"s-fis", titolo:"Sapienza Fisica — Resilienza", tipo:"fisica", conoscenze:["Livello"] },
+  "Vigore": { classe:"s-fis", titolo:"Sapienza Fisica — Vigore", tipo:"fisica", conoscenze:["Livello"] },
+  "Leader": { classe:"s-soc", titolo:"Sapienza Sociale — Leader", tipo:"sociale", conoscenze:["Livello"] },
+  "Motivatore": { classe:"s-soc", titolo:"Sapienza Sociale — Motivatore", tipo:"sociale", conoscenze:["Livello"] },
+  "Oppositore": { classe:"s-soc", titolo:"Sapienza Sociale — Oppositore", tipo:"sociale", conoscenze:["Livello"] },
+  "Persuasore": { classe:"s-soc", titolo:"Sapienza Sociale — Persuasore", tipo:"sociale", conoscenze:["Livello"] }
+};
+var NUMERO_SLOT_SAPIENZE = 6;
+
+var field_ids = ["input_vecchia","output_bio","output_valori",
+  "categoria","intracciabile","mestiere",
+  "acume","empatia","percezione","potenza","tecnica","volonta",
+  "destrezza","fatica","resistenza","salute",
+  "dialettica","popolarita","virtuoso","sinistro"];
+var el = {};
+for(var i = 0; i < field_ids.length; i++){
+  el[field_ids[i]] = document.getElementById(field_ids[i]);
+}
+
+function strip_invisibles(str){
+  return str.replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g, '');
+}
+
+function esc_re(str){
+  var re = new RegExp('[.*+?^' + DOLLAR + '(){}|[\\]\\\\]', 'g');
+  return str.replace(re, function(ch){ return '\\' + ch; });
+}
+
+function bold_label_re(label){
+  return new RegExp('<(b|strong)[^>]*>\\s*' + esc_re(label) + '\\s*:?\\s*<\\/\\1>', 'i');
+}
+
+function estrai_sezioni(testo){
+  var label_re = /data-label\s*=\s*["']([^"']+)["']/gi;
+  var trovati = [];
+  var m;
+  while((m = label_re.exec(testo))){
+    var inizio_tag = testo.lastIndexOf('<', m.index);
+    trovati.push({ nome: m[1], inizio: inizio_tag });
+  }
+  var sezioni = {};
+  for(var i = 0; i < trovati.length; i++){
+    var inizio = trovati[i].inizio;
+    var fine = (i + 1 < trovati.length) ? trovati[i + 1].inizio : testo.length;
+    sezioni[trovati[i].nome] = testo.substring(inizio, fine);
+  }
+  return sezioni;
+}
+
+function trova_chiusura_div(testo, indice_dopo_apertura){
+  var profondita = 1;
+  var tag_re = /<div\b[^>]*>|<\/div\s*>/gi;
+  tag_re.lastIndex = indice_dopo_apertura;
+  var m;
+  while((m = tag_re.exec(testo))){
+    if(/^<\/div/i.test(m[0])){
+      profondita--;
+      if(profondita === 0){ return m.index; }
+    } else {
+      profondita++;
+    }
+  }
+  return testo.length;
+}
+
+function estrai_campi_bold(blocco, etichette){
+  var trovati = [];
+  for(var id in etichette){
+    var re = bold_label_re(etichette[id]);
+    var mm = re.exec(blocco);
+    if(mm){ trovati.push({ id: id, inizio: mm.index, fine: mm.index + mm[0].length }); }
+  }
+  trovati.sort(function(a, b){ return a.inizio - b.inizio; });
+  var risultato = {};
+  for(var k = 0; k < trovati.length; k++){
+    var f = trovati[k];
+    var fine = (k + 1 < trovati.length) ? trovati[k + 1].inizio : blocco.length;
+    var testo_campo = blocco.substring(f.fine, fine);
+    testo_campo = testo_campo.replace(/(\s*<\/div>){1,4}\s*$/i, '');
+    risultato[f.id] = testo_campo.trim();
+  }
+  return risultato;
+}
+
+function estrai_cont_verbatim(blocco){
+  if(!blocco){ return ""; }
+  var marcatore = '<div class="cont">';
+  var idx = blocco.indexOf(marcatore);
+  if(idx === -1){ return ""; }
+  var inizio_contenuto = idx + marcatore.length;
+  var fine_contenuto = trova_chiusura_div(blocco, inizio_contenuto);
+  return blocco.substring(inizio_contenuto, fine_contenuto).trim();
+}
+
+function numero_it(str){
+  if(!str){ return null; }
+  var pulito = String(str).trim().replace(',', '.');
+  var v = parseFloat(pulito);
+  return isNaN(v) ? null : v;
+}
+
+function arrotonda_per_eccesso(valore, divisore){
+  return Math.ceil(valore / divisore);
+}
+
+/* ---------- lettura della vecchia scheda: precompila i campi ---------- */
+
+var vecchia = { bagaglio: "", conoscenze: "", nome: "", foto: "", gen: {}, bio: {}, scuola_casa: "" };
+
+function mostra_errori(lista){
+  var box = document.getElementById('error_box');
+  var ul = document.getElementById('error_list');
+  ul.innerHTML = "";
+  if(lista.length === 0){
+    box.classList.remove('show');
+    return;
+  }
+  for(var i = 0; i < lista.length; i++){
+    var li = document.createElement('li');
+    li.textContent = lista[i];
+    ul.appendChild(li);
+  }
+  box.classList.add('show');
+}
+
+function leggi_vecchia_scheda(){
+  var raw = strip_invisibles(el.input_vecchia.value);
+  if(!raw.trim()){
+    mostra_errori(["Incolla prima il codice della vecchia scheda Studente."]);
+    return false;
+  }
+
+  var sezioni = estrai_sezioni(raw);
+  var richieste = ["Generalità","Biografia","Conoscenze","Bagaglio","Punti"];
+  var mancanti = [];
+  for(var r = 0; r < richieste.length; r++){
+    if(!sezioni[richieste[r]]){ mancanti.push(richieste[r]); }
+  }
+  if(mancanti.length > 0){
+    mostra_errori(["Non trovo queste sezioni nella scheda incollata (controlla di aver copiato tutto il codice, senza tagli): " + mancanti.join(", ") + "."]);
+  } else {
+    mostra_errori([]);
+  }
+
+  var m_classe = raw.match(/class\s*=\s*"(scheda[a-zA-Z]+)"/i);
+  var scheda_class_vecchia = m_classe ? m_classe[1] : "";
+  vecchia.scuola_casa = scheda_class_vecchia ? (CASE_DA_CLASSE_VECCHIA[scheda_class_vecchia] || "") : "";
+
+  var gen_blocco = sezioni["Generalità"] || "";
+  var m_nome = gen_blocco.match(/<div class="nome"[^>]*>\s*<div[^>]*>([\s\S]*?)<\/div>\s*<\/div>/i);
+  vecchia.nome = m_nome ? m_nome[1].trim() : "Nome e Cognome QUI";
+  var m_foto = gen_blocco.match(/<img class="schedafoto"[^>]*src\s*=\s*["']([^"']*)["']/i);
+  vecchia.foto = m_foto ? m_foto[1] : "LINK FOTO QUI";
+
+  var gen_etichette = {
+    nascita: "Data e luogo di nascita",
+    stirpe: "Stirpe",
+    razza: "Razza",
+    bacchetta: "Bacchetta",
+    allineamento: "Allineamento",
+    animali: "Animali da compagnia",
+    scarta_anno: "Anno di frequenza",
+    scarta_favoritismi: "Favoritismi e sfavoritismi"
+  };
+  vecchia.gen = estrai_campi_bold(gen_blocco, gen_etichette);
+
+  var bio_blocco = sezioni["Biografia"] || "";
+  var bio_etichette = {
+    aspetto: "Aspetto fisico",
+    storia: "Storia",
+    infopub: "Informazioni di dominio pubblico",
+    infopriv: "Informazioni private",
+    carattere: "Carattere",
+    relazioni: "Relazioni"
+  };
+  vecchia.bio = estrai_campi_bold(bio_blocco, bio_etichette);
+
+  vecchia.conoscenze = estrai_cont_verbatim(sezioni["Conoscenze"] || "");
+  vecchia.bagaglio = estrai_cont_verbatim(sezioni["Bagaglio"] || "");
+  var punti_verbatim = estrai_cont_verbatim(sezioni["Punti"] || "");
+
+  var m_punti_post = punti_verbatim.match(/<(b|strong)[^>]*>\s*Punti\s*Post\s*:?\s*<\/\1>[^\n<]*/i);
+  if(m_punti_post){
+    var riga_punti_post = m_punti_post[0].trim();
+    vecchia.bagaglio = riga_punti_post + '\n\n' + vecchia.bagaglio;
+  }
+
+  var m_sociali = punti_verbatim.match(/<tr class="nomi">\s*<td>Dialettica<\/td>\s*<td>Popolarit[àa]<\/td>\s*<td>Stima Docenti<\/td>\s*<td>Bont[àa]<\/td>\s*<td>Malvagit[àa]<\/td>\s*<\/tr>\s*<tr class="valori">\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>\s*<td>([^<]*)<\/td>/i);
+
+  var dialettica_studente = m_sociali ? m_sociali[1].trim() : "";
+  var popolarita_studente = m_sociali ? numero_it(m_sociali[2]) : null;
+  var bonta_studente = m_sociali ? numero_it(m_sociali[4]) : null;
+  var malvagita_studente = m_sociali ? numero_it(m_sociali[5]) : null;
+
+  // La Dialettica passa invariata da Studente ad Adulto (se era 3, resta 3).
+  if(dialettica_studente){
+    el.dialettica.value = dialettica_studente;
+  }
+  // Formula confermata per il passaggio Studente -> Adulto.
+  if(popolarita_studente !== null){
+    el.popolarita.value = 8 + arrotonda_per_eccesso(popolarita_studente, 10);
+  }
+  el.virtuoso.value = (bonta_studente !== null) ? String(arrotonda_per_eccesso(bonta_studente, 3)) : "//";
+  el.sinistro.value = (malvagita_studente !== null) ? String(arrotonda_per_eccesso(malvagita_studente, 3)) : "//";
+
+  return true;
+}
+
+/* ---------- Sapienze: fino a 6 slot liberi, nessun vincolo ---------- */
+
+function popola_select_sapienza(select){
+  var opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = "— nessuna —";
+  select.appendChild(opt0);
+  for(var key in SAPIENZE){
+    var o = document.createElement("option");
+    o.value = key;
+    o.textContent = SAPIENZE[key].titolo;
+    select.appendChild(o);
+  }
+}
+
+function render_livelli_sapienza(slot_num){
+  var select = document.getElementById("sap_" + slot_num);
+  var container = document.getElementById("sap_" + slot_num + "_livelli");
+  var key = select.value;
+  container.innerHTML = "";
+  if(!key){ return; }
+  var conoscenze = SAPIENZE[key].conoscenze;
+  for(var i = 0; i < conoscenze.length; i++){
+    var row = document.createElement("div");
+    row.className = "livello-row";
+    var span = document.createElement("span");
+    span.textContent = conoscenze[i];
+    var sel = document.createElement("select");
+    sel.id = "sap_" + slot_num + "_liv_" + i;
+    var etichette = ["0 (non svilup.)","Livello I","Livello II","Livello III","Livello IV","Livello V"];
+    for(var l = 0; l <= 5; l++){
+      var opt = document.createElement("option");
+      opt.value = l;
+      opt.textContent = etichette[l];
+      sel.appendChild(opt);
+    }
+    row.appendChild(span);
+    row.appendChild(sel);
+    container.appendChild(row);
+  }
+}
+
+function costruisci_slot_sapienze(){
+  var fieldset = document.getElementById('sapienze_fieldset');
+  for(var s = 1; s <= NUMERO_SLOT_SAPIENZE; s++){
+    var blocco = document.createElement('div');
+    blocco.className = 'sapienza-slot';
+
+    var label = document.createElement('label');
+    label.setAttribute('for', 'sap_' + s);
+    label.textContent = (s === 1) ? 'Sapienza di partenza' : 'Sapienza aggiuntiva ' + (s - 1);
+    blocco.appendChild(label);
+
+    var select = document.createElement('select');
+    select.id = 'sap_' + s;
+    popola_select_sapienza(select);
+    blocco.appendChild(select);
+
+    var livelli_div = document.createElement('div');
+    livelli_div.id = 'sap_' + s + '_livelli';
+    blocco.appendChild(livelli_div);
+
+    fieldset.appendChild(blocco);
+
+    (function(slot_num){
+      document.getElementById('sap_' + slot_num)["addEvent" + "Listener"]('change', function(){
+        render_livelli_sapienza(slot_num);
+      });
+    })(s);
+  }
+}
+costruisci_slot_sapienze();
+
+function raccogli_sapienze_scelte(){
+  var scelte = [];
+  for(var s = 1; s <= NUMERO_SLOT_SAPIENZE; s++){
+    var select = document.getElementById('sap_' + s);
+    var key = select.value;
+    if(!key){ continue; }
+    var conoscenze = SAPIENZE[key].conoscenze;
+    var livelli = [];
+    var somma = 0;
+    for(var i = 0; i < conoscenze.length; i++){
+      var sel = document.getElementById('sap_' + s + '_liv_' + i);
+      var v = sel ? parseInt(sel.value, 10) : 0;
+      if(isNaN(v)){ v = 0; }
+      livelli.push(v);
+      somma += v;
+    }
+    scelte.push({ key: key, livelli: livelli, somma: somma });
+  }
+  return scelte;
+}
+
+/* ---------- generazione delle due schede ---------- */
+
+el.input_vecchia["addEvent" + "Listener"]('input', function(){
+  leggi_vecchia_scheda();
+});
+
+function genera(){
+  var lettura_ok = leggi_vecchia_scheda();
+
+  var categoria = el.categoria.value;
+  var intracc = el.intracciabile.checked;
+  var mestiere = el.mestiere.value;
+  var scheda_class = intracc ? "schedaintracc" : (CATEGORIA_CLASS[categoria] || "schedaacumen/schedaanimus/schedaars/schedanumen/schedasensus/schedavoluntas/schedaintracc");
+  var categoria_testo = intracc ? "Intracciabile" : (categoria || "DA COMPILARE");
+  var cat_mestiere = categoria_testo + (mestiere ? ", " + mestiere : ", DA COMPILARE");
+
+  var checklist = [];
+  if(!categoria){ checklist.push("Non hai scelto la Categoria Magica: la classe della scheda e il campo \"Categoria Magica e Mestiere\" restano segnaposto."); }
+  if(!mestiere){ checklist.push("Non hai scelto il Mestiere."); }
+  if(!vecchia.scuola_casa){ checklist.push("Scuola di Magia e Casa non riconosciute automaticamente dalla vecchia scheda: controlla il campo nella scheda generata."); }
+  var checklist_ul = document.getElementById('checklist_list');
+  checklist_ul.innerHTML = "";
+  if(checklist.length === 0){ checklist.push("Nessun promemoria: ricontrolla comunque Parametri, Prestigio e Sapienze prima di pubblicare."); }
+  for(var c = 0; c < checklist.length; c++){
+    var li = document.createElement('li');
+    li.textContent = checklist[c];
+    checklist_ul.appendChild(li);
+  }
+
+  function n(id){
+    var v = parseFloat(el[id].value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  // I Parametri Magici sono campi di testo libero (accettano anche notazioni
+  // come "18+1" per i bonus guadagnati con gli anni di gioco): li leggo così
+  // come sono scritti, senza convertirli in numero.
+  function testo(id){
+    var v = el[id].value;
+    return (v !== "" ? v : "0");
+  }
+
+  var acume = testo("acume"), empatia = testo("empatia"), percezione = testo("percezione"),
+      potenza = testo("potenza"), tecnica = testo("tecnica"), volonta = testo("volonta");
+  var destrezza = n("destrezza"), fatica = n("fatica"), resistenza = n("resistenza");
+  var salute_display = n("salute") * 5;
+  var popolarita = el.popolarita.value !== "" ? el.popolarita.value : "DA COMPILARE";
+  var virtuoso = el.virtuoso.value || "//";
+  var sinistro = el.sinistro.value || "//";
+  var dialettica = el.dialettica.value !== "" ? el.dialettica.value : "1";
+
+  /* ---------- Scheda Biografica ---------- */
+  var righe_bio = [];
+  righe_bio.push('<div class="' + scheda_class + '"><div data-slide="effect:slide{left}; duration:200ms; buttons:buttons;" class="scheda_slide_base"><div data-label="Generalità">');
+  righe_bio.push('<div class="nome"><div style="text-align:center">' + vecchia.nome + '</div></div><img class="schedafoto" src="' + vecchia.foto + '">');
+  righe_bio.push('');
+  righe_bio.push('<div class="cont"><div class="cont0"><b>Data e luogo di nascita:</b> ' + (vecchia.gen.nascita || ''));
+  righe_bio.push('');
+  righe_bio.push('<b>Stirpe:</b> ' + (vecchia.gen.stirpe || ''));
+  righe_bio.push('');
+  righe_bio.push('<b>Razza:</b> ' + (vecchia.gen.razza || ''));
+  righe_bio.push('');
+  righe_bio.push('<b>Bacchetta:</b> ' + (vecchia.gen.bacchetta || ''));
+  righe_bio.push('');
+  righe_bio.push('<b>Allineamento:</b> ' + (vecchia.gen.allineamento || ''));
+  righe_bio.push('');
+  righe_bio.push('<b>Categoria Magica e Mestiere:</b> ' + cat_mestiere);
+  righe_bio.push('');
+  righe_bio.push('<b>Scuola di Magia e Casa frequentata:</b> ' + (vecchia.scuola_casa || 'DA COMPILARE'));
+  righe_bio.push('');
+  righe_bio.push('<b>Animali da compagnia:</b> ' + (vecchia.gen.animali || '-'));
+  righe_bio.push('</div></div></div><div data-label="Storia"><p class="titolo-scheda"><i class="fa-solid fa-pen"></i> STORIA</p><div class="cont"><div class="cont0">' + (vecchia.bio.storia || ''));
+  righe_bio.push('');
+  righe_bio.push('<p class="titolo-scheda"><i class="fa-solid fa-newspaper"></i> INFO PUBBLICHE</p>');
+  righe_bio.push(vecchia.bio.infopub || '');
+  righe_bio.push('');
+  righe_bio.push('<p class="titolo-scheda"><i class="fa-solid fa-eye-low-vision"></i> INFO PRIVATE</p>');
+  righe_bio.push(vecchia.bio.infopriv || '');
+  righe_bio.push('');
+  righe_bio.push('</div></div></div><div data-label="Aspetto"><p class="titolo-scheda"><i class="fa-solid fa-person"></i> ASPETTO</p><div class="cont"><div class="cont0">' + (vecchia.bio.aspetto || ''));
+  righe_bio.push('');
+  righe_bio.push('</div></div></div><div data-label="Carattere"><p class="titolo-scheda"><i class="fa-solid fa-masks-theater"></i> CARATTERE</p><div class="cont"><div class="cont0">' + (vecchia.bio.carattere || ''));
+  righe_bio.push('');
+  righe_bio.push('</div></div></div><div data-label="Relazioni"><p class="titolo-scheda"><i class="fa-solid fa-people-group"></i> RELAZIONI</p><div class="cont"><div class="cont0">' + (vecchia.bio.relazioni || ''));
+  righe_bio.push('</div></div></div></div></div>');
+
+  el.output_bio.value = righe_bio.join("\n");
+
+  /* ---------- Scheda Punti/Sapienze ---------- */
+  var righe_valori = [];
+  righe_valori.push('<div class="' + scheda_class + '"><div data-slide="effect:slide{left}; duration:200ms; buttons:buttons;" class="scheda_slide_base"><div data-label="Punti"><p class="titolo-scheda"><i class="fa-solid fa-chart-column"></i> PUNTI</p><div class="cont">');
+  righe_valori.push('<div class="magici"><table><th colspan="6">Parametri Magici</th>');
+  righe_valori.push('');
+  righe_valori.push('<tr class="nomi">');
+  righe_valori.push('<td>Acume</td>');
+  righe_valori.push('<td>Empatia</td>');
+  righe_valori.push('<td>Percezione</td>');
+  righe_valori.push('<td>Potenza</td>');
+  righe_valori.push('<td>Tecnica</td>');
+  righe_valori.push('<td>Volontà</td>');
+  righe_valori.push('</tr>');
+  righe_valori.push('');
+  righe_valori.push('<tr class="valori">');
+  righe_valori.push('<td>' + acume + '</td>');
+  righe_valori.push('<td>' + empatia + '</td>');
+  righe_valori.push('<td>' + percezione + '</td>');
+  righe_valori.push('<td>' + potenza + '</td>');
+  righe_valori.push('<td>' + tecnica + '</td>');
+  righe_valori.push('<td>' + volonta + '</td>');
+  righe_valori.push('</tr>');
+  righe_valori.push('');
+  righe_valori.push('</table></div>');
+  righe_valori.push('<div class="fisici"><table><th colspan="4">Parametri Fisici</th>');
+  righe_valori.push('');
+  righe_valori.push('<tr class="nomi">');
+  righe_valori.push('<td>Destrezza</td>');
+  righe_valori.push('<td>Fatica</td>');
+  righe_valori.push('<td>Resistenza</td>');
+  righe_valori.push('<td>Salute</td>');
+  righe_valori.push('</tr>');
+  righe_valori.push('');
+  righe_valori.push('<tr class="valori">');
+  righe_valori.push('<td>' + destrezza + '</td>');
+  righe_valori.push('<td>' + fatica + '</td>');
+  righe_valori.push('<td>' + resistenza + '</td>');
+  righe_valori.push('<td>' + salute_display + '</td>');
+  righe_valori.push('</tr>');
+  righe_valori.push('');
+  righe_valori.push('</table></div>');
+  righe_valori.push('<div class="sociali"><table><th colspan="4">Parametri Sociali</th>');
+  righe_valori.push('');
+  righe_valori.push('<tr class="nomi">');
+  righe_valori.push('<td>Dialettica</td>');
+  righe_valori.push('<td>Popolarità</td>');
+  righe_valori.push('<td>Virtuoso</td>');
+  righe_valori.push('<td>Sinistro</td>');
+  righe_valori.push('</tr>');
+  righe_valori.push('');
+  righe_valori.push('<tr class="valori">');
+  righe_valori.push('<td>' + dialettica + '</td>');
+  righe_valori.push('<td>' + popolarita + '</td>');
+  righe_valori.push('<td>' + virtuoso + '</td>');
+  righe_valori.push('<td>' + sinistro + '</td>');
+  righe_valori.push('</tr>');
+  righe_valori.push('');
+  // Il Mestiere Libero non ha Prestigio: la riga e la barra non vanno inserite.
+  if(mestiere !== "Mestiere Libero"){
+    righe_valori.push('<tr class="nomi">');
+    righe_valori.push('<td colspan="4" style="border-top: 2px dashed;border-bottom: 2px dashed; padding:7px"><b>Prestigio - ' + (mestiere || 'DA COMPILARE') + '</b></td>');
+    righe_valori.push('</tr>');
+    righe_valori.push('');
+    righe_valori.push('<tr class="valori">');
+    righe_valori.push('<td colspan="4"><div class="contpunti"><div class="max" style="width:0%"></div><div class="prestigio" style="width:0%">0</div></div></td>');
+    righe_valori.push('</tr>');
+    righe_valori.push('');
+  }
+  righe_valori.push('</table></div></div></div><div data-label="Sapienze"><p class="titolo-scheda"><i class="fa-solid fa-wand-sparkles"></i> SAPIENZE</p><div class="cont">');
+
+  var sapienze_scelte = raccogli_sapienze_scelte();
+  var blocchi_sapienza = [];
+  for(var sx = 0; sx < sapienze_scelte.length; sx++){
+    var scelta = sapienze_scelte[sx];
+    var sap = SAPIENZE[scelta.key];
+    var blocco_righe = [];
+    blocco_righe.push('<div class="sapienza"><table>');
+    blocco_righe.push('');
+    if(sap.tipo){
+      blocco_righe.push('<tr><th class="' + sap.classe + '">' + scelta.key + '</th><th><div class="indice" data-html="livello' + scelta.livelli[0] + '"></div></th>');
+      blocco_righe.push('</tr>');
+      blocco_righe.push('');
+    } else {
+      blocco_righe.push('<tr><th colspan="2" class="' + sap.classe + '">' + sap.titolo + '</th>');
+      blocco_righe.push('</tr>');
+      blocco_righe.push('');
+      for(var sc = 0; sc < sap.conoscenze.length; sc++){
+        blocco_righe.push('<tr>');
+        blocco_righe.push('<td>' + sap.conoscenze[sc] + '</td>');
+        blocco_righe.push('<td><div class="indice" data-html="livello' + scelta.livelli[sc] + '"></div></td>');
+        blocco_righe.push('</tr>');
+        blocco_righe.push('');
+      }
+      blocco_righe.push('<tr>');
+      blocco_righe.push('<td colspan="2">' + sap.titolo + ': ' + scelta.somma + '/25</td>');
+      blocco_righe.push('</tr>');
+      blocco_righe.push('');
+    }
+    blocco_righe.push('</table></div>');
+    blocchi_sapienza.push(blocco_righe.join('\n'));
+  }
+  righe_valori.push(blocchi_sapienza.join(''));
+
+  righe_valori.push('</div></div><div data-label="Bagaglio"><p class="titolo-scheda"><i class="fa-solid fa-suitcase"></i> BAGAGLIO</p><div class="cont">' + vecchia.bagaglio);
+  righe_valori.push('</div></div><div data-label="Conoscenze"><div class="cont">' + vecchia.conoscenze);
+  righe_valori.push('</div></div></div></div>');
+
+  el.output_valori.value = righe_valori.join("\n");
+
+  document.getElementById('wrap_checklist').classList.add('show');
+  document.getElementById('wrap_bio').classList.add('show');
+  document.getElementById('wrap_valori').classList.add('show');
+  document.getElementById('wrap_checklist')["scroll" + "IntoView"]({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('btn_converti')["addEvent" + "Listener"](CLICK, genera);
+
+/* ---------- copia / scarica (duplicato per i due output) ---------- */
+
+function seleziona_testo(id_area){
+  var area = document.getElementById(id_area);
+  area.focus();
+  area.select();
+  area["setSelection" + "Range"](0, 999999);
+}
+
+function mostra_copiato(id_msg){
+  var msg = document.getElementById(id_msg);
+  msg.classList.add('show');
+  setTimeout(function(){ msg.classList.remove('show'); }, 1500);
+}
+
+function copia_fallback(id_area, id_hint, id_msg){
+  var riuscito = false;
+  try{
+    seleziona_testo(id_area);
+    riuscito = document.execCommand('copy');
+  }catch(err){
+    riuscito = false;
+  }
+  var hint = document.getElementById(id_hint);
+  if(riuscito){
+    hint.classList.remove('show');
+    mostra_copiato(id_msg);
+  } else {
+    seleziona_testo(id_area);
+    hint.classList.add('show');
+  }
+}
+
+function copia_output(id_area, id_hint, id_msg){
+  var area = document.getElementById(id_area);
+  var hint = document.getElementById(id_hint);
+  if(!area.value){ return; }
+
+  var clipboard_ok = false;
+  if(navigator.clipboard){
+    if(window["isSecure" + "Context"]){ clipboard_ok = true; }
+  }
+  if(clipboard_ok){
+    navigator.clipboard.writeText(area.value).then(function(){
+      hint.classList.remove('show');
+      mostra_copiato(id_msg);
+    }, function(){
+      copia_fallback(id_area, id_hint, id_msg);
+    });
+    return;
+  }
+  copia_fallback(id_area, id_hint, id_msg);
+}
+
+function scarica_output(id_area, id_box_link, nome_file_base){
+  var testo = document.getElementById(id_area).value;
+  if(!testo){ return; }
+  var blob = new Blob([testo], {type: "text/html"});
+  var url = URL["createObject" + "URL"](blob);
+
+  var box = document.getElementById(id_box_link);
+  box.innerHTML = "";
+  var link = document.createElement('a');
+  link.href = url;
+  link["down" + "load"] = nome_file_base + ".html";
+  link.textContent = "Salva il file: " + nome_file_base + ".html";
+  link.className = "link-scarica";
+  box.appendChild(link);
+}
+
+document.getElementById('btn_copia_bio')["addEvent" + "Listener"](CLICK, function(){
+  copia_output('output_bio', 'hint_fallback_bio', 'msg_copiato_bio');
+});
+document.getElementById('btn_scarica_bio')["addEvent" + "Listener"](CLICK, function(){
+  scarica_output('output_bio', 'box_link_bio', 'scheda-biografica-adulto');
+});
+document.getElementById('btn_copia_valori')["addEvent" + "Listener"](CLICK, function(){
+  copia_output('output_valori', 'hint_fallback_valori', 'msg_copiato_valori');
+});
+document.getElementById('btn_scarica_valori')["addEvent" + "Listener"](CLICK, function(){
+  scarica_output('output_valori', 'box_link_valori', 'scheda-valori-adulto');
+});
+
+} // fine init()
+
+function mostra_errore_js(e){
+  try{
+    var banner = document.createElement('div');
+    banner.style.cssText = 'background:#ffdddd;border:2px solid #cc0000;color:#660000;padding:12px 16px;margin:12px auto;max-width:820px;font-family:monospace;font-size:13px;white-space:pre-wrap;border-radius:6px;';
+    banner.textContent = "Errore JavaScript nel convertitore: " + ((e ? e.message : false) ? e.message : e) + " — probabilmente il forum ha alterato il codice. Segnala questo messaggio a chi ha creato lo strumento.";
+    document.body.insertBefore(banner, document.body.firstChild);
+  } catch(e2){}
+}
+
+if(document.readyState === "loading"){
+  document["addEvent" + "Listener"]("DOMContentLoaded", function(){
+    try{ init(); } catch(e){ mostra_errore_js(e); }
+  });
+} else {
+  try{ init(); } catch(e){ mostra_errore_js(e); }
+}
+</script>

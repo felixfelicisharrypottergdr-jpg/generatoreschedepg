@@ -465,9 +465,9 @@ select{appearance:auto!important;-webkit-appearance:auto!important;background-im
   justify-content:center!important;
   align-items:center!important;
   gap:14px!important;
-  margin:28px 0 4px!important;
-  padding-top:18px!important;
-  border-top:1px dashed rgba(201,162,75,.34)!important;
+  margin:14px 0 2px!important;
+  padding-top:0!important;
+  border-top:0!important;
 }
 .felix-page-arrow{
   width:44px!important;
@@ -530,10 +530,20 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
 <script id="master-bridge">
 (function(){
   var KIND=${JSON.stringify(kind)}, TYPE=${JSON.stringify(type)};
+  function measureContentHeight(){
+    try{
+      var root = document.querySelector(".foglio") || document.querySelector(".wrap") || document.body;
+      var rect = root.getBoundingClientRect();
+      var h = Math.ceil(rect.height);
+      if(!h || h < 1) h = Math.ceil(document.body.getBoundingClientRect().height || document.body.offsetHeight || 0);
+      return Math.max(h + 2, 120);
+    }catch(e){
+      return 120;
+    }
+  }
   function emitHeight(){
     try{
-      var h=Math.max(document.documentElement.scrollHeight,document.body.scrollHeight,420);
-      parent.postMessage({__felixMaster:true,type:"height",kind:KIND,pgType:TYPE,height:h},"*");
+      parent.postMessage({__felixMaster:true,type:"height",kind:KIND,pgType:TYPE,height:measureContentHeight()},"*");
     }catch(e){}
   }
   function notify(){
@@ -694,7 +704,10 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
     if(scrollTop){
       try{ parent.postMessage({__felixMaster:true,type:"childPageTop",kind:KIND,pgType:TYPE},"*"); }catch(e){}
     }
-    setTimeout(emitHeight,30);
+    /* Misura dopo che il browser ha realmente nascosto la pagina precedente:
+       così l'iframe si accorcia e la freccia resta subito sotto l'ultimo campo. */
+    setTimeout(emitHeight,0);
+    setTimeout(emitHeight,50);
     try{ parent.postMessage({__felixMaster:true,type:"changed",kind:KIND,pgType:TYPE},"*"); }catch(e){}
   }
 
@@ -977,7 +990,9 @@ function requestFrameHeight(kind){
     try{
       if(fr&&fr.contentDocument){
         const d=fr.contentDocument;
-        fr.style.height=Math.max(d.documentElement.scrollHeight,d.body.scrollHeight,420)+"px";
+        const root=d.querySelector(".foglio")||d.querySelector(".wrap")||d.body;
+        const h=Math.ceil(root.getBoundingClientRect().height||d.body.getBoundingClientRect().height||120);
+        fr.style.height=Math.max(h+2,120)+"px";
       }
     }catch(e){}
   },60);
@@ -1128,7 +1143,7 @@ window.addEventListener("message", async e=>{
   if(m.pgType && m.pgType!==state.type) return;
   if(m.type==="height"){
     const fr=m.kind==="bio"?$("#bioFrame"):$("#valuesFrame");
-    fr.style.height=Math.min(Math.max(Number(m.height)||420,420),12000)+"px";
+    fr.style.height=Math.min(Math.max(Number(m.height)||120,120),12000)+"px";
   }
   if(m.type==="childPageTop"){
     const fr=m.kind==="bio"?$("#bioFrame"):$("#valuesFrame");

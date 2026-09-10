@@ -437,14 +437,68 @@ select{appearance:auto!important;-webkit-appearance:auto!important;background-im
  color:#efe7dc!important;background:rgba(23,26,27,.34)!important;border:1px solid rgba(201,162,75,.18)!important;border-left:3px solid rgba(218,165,32,.70)!important;
  border-radius:5px!important;padding:9px 10px!important;line-height:1.42!important;font-family:Federo,Arial,sans-serif!important;font-size:13px!important;
 }
-.fixed-value,.totale-box{background:#eeeeee!important;color:#222!important;border:1px solid rgba(133,97,6,.72)!important;border-radius:6px!important}
-.totale-box.ok{border-color:#69c79f!important}.totale-box.bad{border-color:#d4574f!important}
+.fixed-value{background:#eeeeee!important;color:#222!important;border:1px solid rgba(133,97,6,.72)!important;border-radius:6px!important}
+.totale-box{
+  margin:20px 0 4px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  color:#f2ece4!important;
+  font-size:13px!important;
+  line-height:1.45!important;
+  box-shadow:none!important;
+}
+.totale-box.ok{color:#7ed3ad!important}
+.totale-box.bad{color:#f08a80!important}
 .stat-grid{gap:12px 14px!important}.stat-field label{font-size:15px!important;margin:0 0 6px!important}.stat-field input{margin:0!important}
 /* Piano di Studi: separa meglio Materie obbligatorie, Materie Facoltative e riepilogo */
-#fieldset_piano_studi .stat-grid + .stat-grid{margin-top:24px!important}
-#fieldset_piano_studi .facoltativa-slot{padding-top:2px!important}
-#fieldset_piano_studi .fac-voto-row{margin-top:10px!important}
-#fieldset_piano_studi #totale_studi_box{margin-top:22px!important}
+#fieldset_piano_studi .stat-grid + .stat-grid{margin-top:26px!important}
+#fieldset_piano_studi .facoltativa-slot{padding-top:4px!important}
+#fieldset_piano_studi .fac-voto-row{margin-top:11px!important}
+#fieldset_piano_studi #totale_studi_box{margin-top:25px!important}
+
+/* Sottopagine interne: meno scorrimento, più respiro tra una parte e l'altra */
+.felix-page-hidden{display:none!important}
+.felix-child-pager{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:14px!important;
+  margin:28px 0 4px!important;
+  padding-top:18px!important;
+  border-top:1px dashed rgba(201,162,75,.34)!important;
+}
+.felix-page-arrow{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  background:goldenrod!important;
+  color:#171a1b!important;
+  border:2px solid #f1ece5!important;
+  box-shadow:0 0 0 1px #856106!important;
+  font-size:21px!important;
+  line-height:1!important;
+  transition:transform .15s ease, opacity .15s ease!important;
+}
+.felix-page-arrow:hover{transform:translateY(-1px)!important;opacity:.9!important}
+.felix-page-arrow.back{
+  background:transparent!important;
+  color:#f2ece4!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  box-shadow:none!important;
+}
+.felix-page-count{
+  color:#d8cfc5!important;
+  font-size:12px!important;
+  min-width:56px!important;
+  text-align:center!important;
+}
 .checkbox-row label,.checkbox-label{color:#f2ece4!important;font-size:13px!important;font-variant:normal!important}
 input[type=checkbox]{min-height:auto!important;accent-color:goldenrod!important;width:auto!important}
 .generate-btn-wrap{${isBio ? "display:none!important;" : ""}}
@@ -486,6 +540,171 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
     try{ parent.postMessage({__felixMaster:true,type:"changed",kind:KIND,pgType:TYPE},"*"); }catch(e){}
     setTimeout(emitHeight,20);
   }
+
+  var __felixPages = [];
+  var __felixPageIndex = 0;
+
+  function directElements(parentEl){
+    return Array.prototype.filter.call(parentEl ? parentEl.children : [], function(el){
+      return el && el.nodeType === 1;
+    });
+  }
+  function addPage(nodes){
+    nodes = (nodes || []).filter(Boolean);
+    if(nodes.length) __felixPages.push(nodes);
+  }
+  function textOf(el){
+    return String(el && el.textContent || "").replace(/\s+/g," ").trim().toLowerCase();
+  }
+  function setupFelixPages(){
+    __felixPages = [];
+    __felixPageIndex = 0;
+
+    if(KIND === "bio"){
+      var panel = document.querySelector("#screen_form > .panel");
+      if(!panel) return;
+      var kids = directElements(panel);
+      var sets = Array.prototype.slice.call(panel.querySelectorAll(":scope > fieldset"));
+      if(sets.length >= 5){
+        var firstSetPos = kids.indexOf(sets[0]);
+        addPage(kids.slice(0, firstSetPos + 1));
+        addPage([sets[1]]);
+        addPage([sets[2], sets[3]]);
+        addPage([sets[4]]);
+      }
+    } else if(TYPE === "student"){
+      var panelS = document.querySelector(".wrap > .panel");
+      if(!panelS) return;
+      var kidsS = directElements(panelS);
+      var setsS = Array.prototype.slice.call(panelS.querySelectorAll(":scope > fieldset"));
+      if(setsS.length >= 4){
+        var p0end = kidsS.indexOf(setsS[0]);
+        addPage(kidsS.slice(0, p0end + 1));
+        addPage([setsS[1], setsS[2]]);
+        addPage([setsS[3]]);
+      }
+    } else {
+      var panelA = document.querySelector("#screen_punti > .panel");
+      if(!panelA) return;
+      var kidsA = directElements(panelA);
+      var setsA = Array.prototype.slice.call(panelA.querySelectorAll(":scope > fieldset"));
+      var pm = setsA.find(function(fs){ return textOf(fs.querySelector("legend")).indexOf("parametri magici") !== -1; });
+      var pf = setsA.find(function(fs){ return textOf(fs.querySelector("legend")).indexOf("parametri fisici") !== -1; });
+      var ps = setsA.find(function(fs){ return textOf(fs.querySelector("legend")).indexOf("parametri sociali") !== -1; });
+      var pr = setsA.find(function(fs){ return textOf(fs.querySelector("legend")).indexOf("prestigio") !== -1; });
+      var mf = setsA.find(function(fs){ return textOf(fs.querySelector("legend")).indexOf("materie facoltative") !== -1; });
+      if(pm && pf && ps && pr && mf){
+        var pmPos = kidsA.indexOf(pm);
+        addPage(kidsA.slice(0, pmPos));
+        addPage([pm,pf,ps]);
+        var page3 = [pr,mf];
+        var genWrap = panelA.querySelector(":scope > .generate-btn-wrap");
+        if(genWrap) page3.push(genWrap);
+        addPage(page3);
+      }
+    }
+
+    if(__felixPages.length < 2) return;
+
+    __felixPages.forEach(function(nodes, idx){
+      nodes.forEach(function(el){
+        el.setAttribute("data-felix-page", String(idx));
+      });
+    });
+
+    for(var i=0;i<__felixPages.length-1;i++){
+      var last = __felixPages[i][__felixPages[i].length-1];
+      if(!last) continue;
+      var pager = document.createElement("div");
+      pager.className = "felix-child-pager";
+      pager.setAttribute("data-felix-pager", String(i));
+
+      if(i > 0){
+        var back = document.createElement("button");
+        back.type = "button";
+        back.className = "felix-page-arrow back";
+        back.innerHTML = "&#8592;";
+        back.title = "Pagina precedente";
+        back.setAttribute("aria-label","Pagina precedente");
+        back.addEventListener("click", function(){
+          showFelixPage(Math.max(0,__felixPageIndex-1), true);
+        });
+        pager.appendChild(back);
+      }
+
+      var count = document.createElement("span");
+      count.className = "felix-page-count";
+      count.textContent = (i+1) + " / " + __felixPages.length;
+      pager.appendChild(count);
+
+      var next = document.createElement("button");
+      next.type = "button";
+      next.className = "felix-page-arrow";
+      next.innerHTML = "&#8594;";
+      next.title = "Pagina successiva";
+      next.setAttribute("aria-label","Pagina successiva");
+      next.addEventListener("click", function(){
+        showFelixPage(Math.min(__felixPages.length-1,__felixPageIndex+1), true);
+      });
+      pager.appendChild(next);
+
+      last.insertAdjacentElement("afterend",pager);
+    }
+
+    var finalLast = __felixPages[__felixPages.length-1][__felixPages[__felixPages.length-1].length-1];
+    if(finalLast){
+      var finalPager = document.createElement("div");
+      finalPager.className = "felix-child-pager";
+      finalPager.setAttribute("data-felix-pager", String(__felixPages.length-1));
+
+      var backFinal = document.createElement("button");
+      backFinal.type = "button";
+      backFinal.className = "felix-page-arrow back";
+      backFinal.innerHTML = "&#8592;";
+      backFinal.title = "Pagina precedente";
+      backFinal.setAttribute("aria-label","Pagina precedente");
+      backFinal.addEventListener("click", function(){
+        showFelixPage(Math.max(0,__felixPageIndex-1), true);
+      });
+      finalPager.appendChild(backFinal);
+
+      var countFinal = document.createElement("span");
+      countFinal.className = "felix-page-count";
+      countFinal.textContent = __felixPages.length + " / " + __felixPages.length;
+      finalPager.appendChild(countFinal);
+
+      finalLast.insertAdjacentElement("afterend",finalPager);
+    }
+
+    showFelixPage(0,false);
+  }
+
+  function showFelixPage(index, scrollTop){
+    if(!__felixPages.length) return;
+    index = Math.max(0, Math.min(__felixPages.length-1, index));
+    __felixPageIndex = index;
+
+    document.querySelectorAll("[data-felix-page]").forEach(function(el){
+      el.classList.toggle("felix-page-hidden", el.getAttribute("data-felix-page") !== String(index));
+    });
+    document.querySelectorAll("[data-felix-pager]").forEach(function(el){
+      el.classList.toggle("felix-page-hidden", el.getAttribute("data-felix-pager") !== String(index));
+    });
+
+    if(scrollTop){
+      try{ parent.postMessage({__felixMaster:true,type:"childPageTop",kind:KIND,pgType:TYPE},"*"); }catch(e){}
+    }
+    setTimeout(emitHeight,30);
+    try{ parent.postMessage({__felixMaster:true,type:"changed",kind:KIND,pgType:TYPE},"*"); }catch(e){}
+  }
+
+  window.__felixShowPageContaining = function(el){
+    if(!el || !__felixPages.length) return;
+    var owner = el.closest ? el.closest("[data-felix-page]") : null;
+    var n = owner ? Number(owner.getAttribute("data-felix-page")) : NaN;
+    if(!isNaN(n)) showFelixPage(n,false);
+  };
+
   function ready(){
     try{
       ${isBio ? `
@@ -494,6 +713,7 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
       var sl=document.getElementById("screen_landing"); if(sl) sl.style.display="none";
       var si=document.getElementById("screen_import"); if(si) si.style.display="none";
       ` : ""}
+      setupFelixPages();
       document.addEventListener("input",notify,true);
       document.addEventListener("change",notify,true);
       if(window.ResizeObserver){
@@ -716,8 +936,15 @@ function buildSectionNav(kind){
     b.type="button"; b.className="section-chip"; b.textContent=item.label;
     b.addEventListener("click",()=>{
       const fr=kind==="bio"?$("#bioFrame"):$("#valuesFrame");
-      const top=fr.getBoundingClientRect().top+window.scrollY+item.el.getBoundingClientRect().top-90;
-      window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
+      try{
+        if(d.defaultView && typeof d.defaultView.__felixShowPageContaining==="function"){
+          d.defaultView.__felixShowPageContaining(item.el);
+        }
+      }catch(e){}
+      setTimeout(()=>{
+        const top=fr.getBoundingClientRect().top+window.scrollY+item.el.getBoundingClientRect().top-90;
+        window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
+      },40);
     });
     host.appendChild(b);
   });
@@ -902,6 +1129,13 @@ window.addEventListener("message", async e=>{
   if(m.type==="height"){
     const fr=m.kind==="bio"?$("#bioFrame"):$("#valuesFrame");
     fr.style.height=Math.min(Math.max(Number(m.height)||420,420),12000)+"px";
+  }
+  if(m.type==="childPageTop"){
+    const fr=m.kind==="bio"?$("#bioFrame"):$("#valuesFrame");
+    if(fr){
+      const top=Math.max(0,fr.getBoundingClientRect().top+window.scrollY-82);
+      window.scrollTo({top,behavior:"smooth"});
+    }
   }
   if(m.type==="ready"){
     state.loaded[m.kind]=true;

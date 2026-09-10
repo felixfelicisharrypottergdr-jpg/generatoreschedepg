@@ -145,7 +145,7 @@ h1{
 .type-desc{color:#e4ddd4;line-height:1.5;font-size:13px}
 .type-note{margin-top:14px;padding-top:12px;border-top:1px dashed rgba(201,162,75,.30);color:#bdb3a8;font-size:11px;line-height:1.45}
 .frame-shell{background:transparent;border:0;border-radius:0;overflow:hidden}
-.tool-frame{display:block;width:100%;border:0;min-height:420px;background:#4c392c;color-scheme:dark}
+.tool-frame{display:block;width:100%;border:0;min-height:0;height:120px;background:#4c392c;color-scheme:dark}
 #stage-bio,#stage-values{background:#4c392c}
 #stage-bio .frame-shell,#stage-values .frame-shell{background:#4c392c}
 .stage-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:17px;border-top:1px dashed rgba(201,162,75,.42)}
@@ -448,6 +448,23 @@ input,textarea,select{
 textarea{min-height:135px!important;line-height:1.5!important;resize:vertical!important}
 textarea#storia{min-height:215px!important}
 input:focus,textarea:focus,select:focus{outline:2px solid rgba(218,165,32,.36)!important;outline-offset:1px!important;border-color:goldenrod!important}
+input.invalid,select.invalid,textarea.invalid,.stat-field input.invalid,#prestigio_valore.invalid{
+  border:2px solid #e05b52!important;
+  background:#fff1f0!important;
+  box-shadow:0 0 0 2px rgba(224,91,82,.18)!important;
+}
+input.invalid:focus,select.invalid:focus,textarea.invalid:focus,#prestigio_valore.invalid:focus{
+  outline:2px solid rgba(224,91,82,.30)!important;outline-offset:1px!important;border-color:#e05b52!important;
+}
+.master-merged-hidden{display:none!important}
+.master-carryover{
+  margin:0 0 22px;padding:0 0 14px;border-bottom:1px dashed rgba(201,162,75,.34);
+  color:#eee6dc;font-size:13px;line-height:1.55;
+}
+.master-carryover b{color:goldenrod;font-weight:normal}
+.master-secret-category-note{
+  margin:8px 0 4px;color:#efe7dc;font-size:12px;line-height:1.45;
+}
 input:disabled,select:disabled{opacity:.58!important;background:#d8d5cf!important}
 select{appearance:auto!important;-webkit-appearance:auto!important;background-image:none!important;cursor:pointer!important}
 .rules-hint,.hint{
@@ -537,6 +554,13 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
       ` : ""}
       document.addEventListener("input",notify,true);
       document.addEventListener("change",notify,true);
+      document.addEventListener("click",function(ev){
+        var t=ev.target&&ev.target.closest?ev.target.closest("button"):null;
+        if(t && (t.id==="continua_btn" || t.id==="indietro_btn")){
+          setTimeout(emitHeight,30); setTimeout(emitHeight,160);
+          try{ parent.postMessage({__felixMaster:true,type:"changed",kind:KIND,pgType:TYPE},"*"); }catch(e){}
+        }
+      },true);
       if(window.ResizeObserver){
         new ResizeObserver(function(){emitHeight()}).observe(document.body);
       }
@@ -657,7 +681,7 @@ function getVal(doc,id){
 }
 function setVal(doc,id,val,onlyIfEmpty=false){
   const el=doc&&doc.getElementById(id);
-  if(!el || val==null || val==="") return;
+  if(!el || val==null) return;
   if(onlyIfEmpty && (el.type==="checkbox" ? el.checked : el.value)) return;
   if(el.type==="checkbox") el.checked=!!val; else el.value=val;
   el.dispatchEvent(new Event("change",{bubbles:true}));
@@ -672,6 +696,105 @@ function normalizeRace(v){
   if(s.includes("licant") || s.includes("lupo mannaro")) return "lupomannaro";
   return "";
 }
+function hideMergedControl(doc,id){
+  const el=doc&&doc.getElementById(id);
+  if(!el) return;
+  el.classList.add("master-merged-hidden");
+  const label=doc.querySelector('label[for="'+id+'"]');
+  if(label) label.classList.add("master-merged-hidden");
+}
+function showMergedControl(doc,id){
+  const el=doc&&doc.getElementById(id);
+  if(!el) return;
+  el.classList.remove("master-merged-hidden");
+  const label=doc.querySelector('label[for="'+id+'"]');
+  if(label) label.classList.remove("master-merged-hidden");
+}
+function hideNode(doc,selector){
+  const el=doc&&doc.querySelector(selector); if(el) el.classList.add("master-merged-hidden");
+}
+function showNode(doc,selector){
+  const el=doc&&doc.querySelector(selector); if(el) el.classList.remove("master-merged-hidden");
+}
+function ensureCarryover(doc){
+  let box=doc.getElementById("master_carryover");
+  if(box) return box;
+  box=doc.createElement("div");
+  box.id="master_carryover";
+  box.className="master-carryover";
+  const panel=doc.querySelector(".panel");
+  if(!panel) return box;
+  const firstFieldset=panel.querySelector("fieldset");
+  if(firstFieldset) panel.insertBefore(box,firstFieldset);
+  else panel.insertBefore(box,panel.firstChild);
+  return box;
+}
+function friendlyRace(v){
+  const raw=String(v||"").trim();
+  return raw || "Umana";
+}
+function optimizeMergedValuesUI(){
+  if(!state.type) return;
+  const b=currentDoc("bio"), v=currentDoc("values");
+  if(!b||!v) return;
+  const box=ensureCarryover(v);
+  if(state.type==="student"){
+    ["casa","anno","razza"].forEach(id=>hideMergedControl(v,id));
+    hideNode(v,"#rules_hint_razza");
+    const casa=getVal(b,"casa")||"—";
+    const anno=getVal(b,"anno")||"—";
+    const razza=friendlyRace(getVal(b,"razza"));
+    box.innerHTML='<b>Dalla Biografia:</b> '+casa+' · '+(anno!=="—"?anno+' Anno':'Anno —')+' · '+razza+'. <span style="opacity:.76">Per modificarli, torna alla Biografia.</span>';
+  }else{
+    hideMergedControl(v,"mestiere");
+    hideMergedControl(v,"razza");
+    hideNode(v,"#rules_hint_razza");
+    hideNode(v,"#mestiere_libero_wrap");
+    hideNode(v,'#intracciabile');
+    const intr=v.getElementById("intracciabile");
+    if(intr && intr.closest(".checkbox-row")) intr.closest(".checkbox-row").classList.add("master-merged-hidden");
+
+    const bioCat=String(getVal(b,"categoria")||"");
+    const isSecret=bioCat==="Intracciabile";
+    if(isSecret){
+      showMergedControl(v,"categoria");
+      const catLabel=v.querySelector('label[for="categoria"]');
+      if(catLabel) catLabel.textContent="Categoria Magica reale";
+      let note=v.getElementById("master_secret_category_note");
+      if(!note){
+        note=v.createElement("div");
+        note.id="master_secret_category_note";
+        note.className="master-secret-category-note";
+        const cat=v.getElementById("categoria");
+        if(cat) cat.insertAdjacentElement("afterend",note);
+      }
+      note.textContent="Questa scelta serve soltanto a calcolare correttamente i Valori del PG Intracciabile e non verrà mostrata come Categoria Magica pubblica nella Scheda PG.";
+    }else{
+      hideMergedControl(v,"categoria");
+      hideNode(v,"#master_secret_category_note");
+    }
+
+    const birth=String(getVal(b,"nascita")||"").match(/\b(19|20)\d{2}\b/);
+    if(birth){
+      hideMergedControl(v,"anno_nascita");
+      hideNode(v,"#rules_hint_eta_debito");
+    }else{
+      showMergedControl(v,"anno_nascita");
+    }
+
+    let job=String(getVal(b,"mestiere")||"—");
+    const freeJob=String(getVal(b,"mestiere_libero")||"").trim();
+    if(job==="Mestiere Libero" && freeJob) job=freeJob;
+    const razza=friendlyRace(getVal(b,"razza"));
+    const catDisplay=isSecret?"Intracciabile":(bioCat||"—");
+    box.innerHTML='<b>Dalla Biografia:</b> Categoria Magica '+catDisplay+' · '+job+' · '+razza+'. <span style="opacity:.76">Per modificarli, torna alla Biografia.</span>';
+  }
+
+  try{
+    if(typeof v.defaultView.update_live_feedback==="function") v.defaultView.update_live_feedback();
+    if(typeof v.defaultView.update_live_feedback_studi==="function") v.defaultView.update_live_feedback_studi();
+  }catch(e){}
+}
 function syncFromBioToValues(force=true){
   if(!state.type) return;
   const b=currentDoc("bio"), v=currentDoc("values");
@@ -681,12 +804,21 @@ function syncFromBioToValues(force=true){
     setVal(v,"anno",getVal(b,"anno"),!force);
     setVal(v,"razza",normalizeRace(getVal(b,"razza")),!force);
   }else{
-    const cat=getVal(b,"categoria");
+    const cat=String(getVal(b,"categoria")||"");
+    const root=v.documentElement;
+    const prevBioCat=root.dataset.masterBioCategory||"";
     if(cat==="Intracciabile"){
       setVal(v,"intracciabile",true,!force);
+      // Se la Categoria precedente era stata semplicemente copiata dalla Biografia,
+      // la svuotiamo una sola volta: il player deve indicare qui la Categoria reale.
+      if(prevBioCat && prevBioCat!=="Intracciabile" && getVal(v,"categoria")===prevBioCat){
+        setVal(v,"categoria","",false);
+      }
     } else {
+      setVal(v,"intracciabile",false,!force);
       setVal(v,"categoria",cat,!force);
     }
+    root.dataset.masterBioCategory=cat;
     let job=getVal(b,"mestiere");
     const freeJob=getVal(b,"mestiere_libero");
     if(job==="Cameriere" || job==="Locandiere") job="Locandiere/Cameriere";
@@ -696,6 +828,8 @@ function syncFromBioToValues(force=true){
     const birth=String(getVal(b,"nascita")||"").match(/\b(19|20)\d{2}\b/);
     if(birth) setVal(v,"anno_nascita",birth[0],!force);
   }
+  optimizeMergedValuesUI();
+  requestFrameHeight("values");
   saveDraft();
 }
 
@@ -785,19 +919,37 @@ function showStep(step){
   if(step==="bio"||step==="values") requestFrameHeight(step);
   window.scrollTo({top:0,behavior:"smooth"});
 }
-function requestFrameHeight(kind){
-  setTimeout(()=>{
-    const fr=state.frames[kind];
-    try{
-      if(fr&&fr.contentDocument){
-        const d=fr.contentDocument;
-        const root=d.querySelector(".foglio")||d.querySelector(".wrap")||d.body;
-        const h=Math.ceil(root.getBoundingClientRect().height||d.body.getBoundingClientRect().height||120);
-        fr.style.height=Math.max(h+2,120)+"px";
-      }
-    }catch(e){}
-  },60);
+function measureFrameContent(kind){
+  const fr=state.frames[kind];
+  if(!fr||!fr.contentDocument) return 120;
+  const d=fr.contentDocument;
+  let root=null;
+  if(kind==="values" && state.type==="adult"){
+    const inner=d.getElementById("screens_inner");
+    const sap=inner&&inner.classList.contains("at-sapienze");
+    root=d.getElementById(sap?"screen_sapienze":"screen_punti");
+  }
+  if(!root) root=d.querySelector(".foglio")||d.querySelector(".wrap")||d.body;
+  const r=root.getBoundingClientRect();
+  const h=Math.ceil(Math.max(r.height||0,root.scrollHeight||0));
+  return Math.max(h+2,120);
 }
+function requestFrameHeight(kind){
+  const fr=state.frames[kind];
+  if(!fr) return;
+  const apply=()=>{
+    try{
+      // Nessuna altezza minima artificiale: il pulsante successivo segue davvero il contenuto.
+      fr.style.height="1px";
+      const h=measureFrameContent(kind);
+      fr.style.height=Math.min(Math.max(h,120),12000)+"px";
+    }catch(e){}
+  };
+  setTimeout(apply,20);
+  setTimeout(apply,100);
+  setTimeout(apply,260);
+}
+
 function runGenerator(kind){
   const fr=kind==="bio" ? $("#bioFrame") : $("#valuesFrame");
   const d=fr&&fr.contentDocument;
@@ -944,12 +1096,17 @@ window.addEventListener("message", async e=>{
   if(m.pgType && m.pgType!==state.type) return;
   if(m.type==="height"){
     const fr=m.kind==="bio"?$("#bioFrame"):$("#valuesFrame");
-    fr.style.height=Math.min(Math.max(Number(m.height)||120,120),12000)+"px";
+    if(!(m.kind==="values" && state.type==="adult")){
+      fr.style.height=Math.min(Math.max(Number(m.height)||120,120),12000)+"px";
+    } else {
+      requestFrameHeight("values");
+    }
   }
   if(m.type==="ready"){
     state.loaded[m.kind]=true;
     await restoreFrame(m.kind);
     if(m.kind==="bio" && state.type) syncFromBioToValues(false);
+    if(m.kind==="values" && state.type) optimizeMergedValuesUI();
     requestFrameHeight(m.kind);
     setTimeout(()=>refreshStepUI(m.kind),120);
     if(state.loaded.bio && state.loaded.values){
@@ -960,8 +1117,10 @@ window.addEventListener("message", async e=>{
   }
   if(m.type==="changed"){
     setSaveState(true);
+    if(m.kind==="values") optimizeMergedValuesUI();
+    requestFrameHeight(m.kind);
     clearTimeout(saveDraft._debounce);
-    saveDraft._debounce=setTimeout(()=>{saveDraft();updateCompletion(m.kind);},220);
+    saveDraft._debounce=setTimeout(()=>{saveDraft();updateCompletion(m.kind);requestFrameHeight(m.kind);},220);
   }
 });
 

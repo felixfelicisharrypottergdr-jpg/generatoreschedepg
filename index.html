@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -82,6 +83,7 @@ h1{
   display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:999px;white-space:nowrap;
   transition:.15s ease;
 }
+[hidden]{display:none!important}
 .step-pill:hover{color:var(--cream)}
 .step-pill .num{
   width:27px;height:27px;border-radius:50%;display:grid;place-items:center;
@@ -135,8 +137,28 @@ h1{
   transition:.16s ease;min-height:215px;box-shadow:0 8px 22px rgba(0,0,0,.16);
 }
 .type-card:hover{transform:translateY(-2px);border-color:var(--gold-bright);box-shadow:0 12px 28px rgba(0,0,0,.25)}
-.type-card.selected{border-color:var(--gold-bright);box-shadow:0 0 0 2px rgba(218,165,32,.12),0 12px 28px rgba(0,0,0,.22)}
-.type-card.selected::after{content:'Scelto';position:absolute;right:13px;top:13px;color:#171a1b;background:var(--gold-bright);border-radius:999px;padding:4px 7px;font-size:10px}
+/* La scelta attiva deve essere riconoscibile a colpo d'occhio. */
+.type-card.selected{
+  background:linear-gradient(145deg,rgba(112,78,48,.98),rgba(72,50,37,.98));
+  border-color:var(--gold-bright);
+  transform:translateY(-3px) scale(1.015);
+  box-shadow:0 0 0 2px rgba(218,165,32,.24),0 15px 34px rgba(0,0,0,.30);
+  opacity:1;
+}
+.type-card.selected:hover{transform:translateY(-4px) scale(1.015)}
+.type-card.selected::after{content:'Scelto';position:absolute;right:13px;top:13px;color:#171a1b;background:var(--gold-bright);border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.22)}
+/* Dopo una scelta, l'alternativa resta disponibile ma passa visivamente in secondo piano. */
+.type-grid:has(.type-card.selected) .type-card:not(.selected){
+  opacity:.56;
+  transform:scale(.965);
+  filter:saturate(.72);
+  box-shadow:0 5px 14px rgba(0,0,0,.11);
+}
+.type-grid:has(.type-card.selected) .type-card:not(.selected):hover{
+  opacity:.78;
+  transform:translateY(-1px) scale(.975);
+  filter:saturate(.88);
+}
 .type-icon{
   width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--gold-bright);color:#171a1b;
   border:3px solid #f1ece5;box-shadow:0 0 0 1px var(--line);font:700 21px var(--magic);margin-bottom:16px;
@@ -244,8 +266,9 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
           <span class="progress-fill" id="progressFill" aria-hidden="true"></span>
           <button class="step-pill active" data-step="type"><span class="num">1</span><span class="label">Il tuo PG</span></button>
           <button class="step-pill" data-step="bio"><span class="num">2</span><span class="label">La sua storia</span></button>
-          <button class="step-pill" data-step="values"><span class="num">3</span><span class="label">I suoi Valori</span></button>
-          <button class="step-pill" data-step="review"><span class="num">4</span><span class="label">Scheda pronta</span></button>
+          <button class="step-pill" data-step="params"><span class="num">3</span><span class="label" id="paramsStepLabel">I suoi Valori</span></button>
+          <button class="step-pill adult-only-step" data-step="wisdom" id="wisdomStep" hidden><span class="num">4</span><span class="label">Sapienze</span></button>
+          <button class="step-pill" data-step="review"><span class="num" id="reviewStepNum">4</span><span class="label">Scheda pronta</span></button>
         </div>
       </div>
       <div class="top-actions">
@@ -260,7 +283,7 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
           <h2 class="stage-title">Da dove comincia la tua storia?</h2>
           <p class="stage-sub">Ogni storia comincia in modo diverso: scegli se vuoi creare un PG Studente a Hogwarts oppure un PG Adulto già immerso nel Mondo Magico.</p>
         </div>
-        <span class="badge">Passaggio 1 di 4</span>
+        <span class="badge" id="typeBadge">Passaggio 1 di 4</span>
       </div>
       <div class="type-grid">
         <button class="type-card" data-type="student">
@@ -313,7 +336,7 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
           <h2 class="stage-title" id="valuesTitle">Dai forma alle sue capacità</h2>
           <p class="stage-sub" id="valuesIntro">Completa i Valori del tuo PG seguendo le indicazioni che compaiono durante la compilazione: se qualcosa non rispetta le regole, saprai subito cosa correggere.</p>
         </div>
-        <span class="badge">Passaggio 3 di 4</span>
+        <span class="badge" id="valuesBadge">Passaggio 3 di 4</span>
       </div>
       <div class="step-assist" id="valuesAssist">
         <div class="completion-copy">Hai completato <b id="valuesCount">0</b> campi <span id="valuesTotal"></span></div>
@@ -322,8 +345,8 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
       <div class="section-nav" id="valuesNav" aria-label="Vai a una sezione dei Valori"></div>
       <div class="frame-shell"><iframe class="tool-frame" id="valuesFrame" title="Scheda valori"></iframe></div>
       <div class="stage-actions">
-        <div class="action-group"><button class="btn secondary" data-go="bio">← Torna alla Biografia</button></div>
-        <div class="action-group next-action"><button class="btn primary forward-arrow" id="generateAll" title="Prepara la Scheda" aria-label="Prepara la Scheda">→</button></div>
+        <div class="action-group"><button class="btn secondary" id="valuesBack">← Torna alla Biografia</button></div>
+        <div class="action-group next-action"><button class="btn primary forward-arrow" id="generateAll" title="Continua" aria-label="Continua">→</button></div>
       </div>
     </section>
 
@@ -333,7 +356,7 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
           <h2 class="stage-title">La tua Scheda è pronta</h2>
           <p class="stage-sub">Hai finito. Biografia e Valori sono già nell’ordine giusto: copia la Scheda PG completa e incollala nel forum.</p>
         </div>
-        <span class="badge">Passaggio 4 di 4</span>
+        <span class="badge" id="reviewBadge">Passaggio 4 di 4</span>
       </div>
       <div class="review-grid">
         <div class="output-card">
@@ -349,7 +372,7 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
           <h3>Prima di pubblicare</h3>
           <div id="reviewStatus"></div>
           <div class="copy-row" style="margin-top:18px">
-            <button class="btn secondary" data-go="values">← Torna ai Valori</button>
+            <button class="btn secondary" id="reviewBackValues">← Torna ai Valori</button>
             <button class="btn ghost" data-go="bio">Torna alla Biografia</button>
           </div>
         </aside>
@@ -411,6 +434,7 @@ function decode64(v){
 }
 function childEnhancements(kind,type){
   const isBio=kind==="bio";
+  const isAdultValues=kind==="values" && type==="adult";
   return `
 <style id="master-overrides">
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Federo&display=swap');
@@ -465,6 +489,13 @@ input.invalid:focus,select.invalid:focus,textarea.invalid:focus,#prestigio_valor
 .master-secret-category-note{
   margin:8px 0 4px;color:#efe7dc;font-size:12px;line-height:1.45;
 }
+.master-mini-hint{
+  margin:6px 0 2px!important;
+  color:#d9cdbf!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+  opacity:.9!important;
+}
 input:disabled,select:disabled{opacity:.58!important;background:#d8d5cf!important}
 select{appearance:auto!important;-webkit-appearance:auto!important;background-image:none!important;cursor:pointer!important}
 .rules-hint,.hint{
@@ -504,6 +535,89 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
 .error-box{border-radius:6px!important}
 .screens-outer{overflow:hidden!important}
 .debito-slot{border-top-color:rgba(201,162,75,.42)!important}
+${isAdultValues ? `
+#continua_btn,#indietro_btn{display:none!important}
+.debito-livello-row{
+  display:grid!important;
+  grid-template-columns:minmax(260px,1fr) auto!important;
+  gap:24px!important;
+  align-items:end!important;
+  margin:0!important;
+  padding:13px 0!important;
+  border-bottom:1px dashed rgba(201,162,75,.20)!important;
+}
+.debito-livello-row:last-child{border-bottom:0!important}
+.debito-livello-row>span{
+  min-width:0!important;
+  width:auto!important;
+  color:#f2ece4!important;
+  font-size:14px!important;
+  line-height:1.35!important;
+  padding:0 0 4px!important;
+}
+.debito-livello-row>select.master-level-source{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  min-height:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  padding:0!important;
+  border:0!important;
+}
+.master-level-picker{
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  justify-self:end!important;
+}
+.master-level-choice{
+  display:grid!important;
+  grid-template-rows:auto 22px!important;
+  place-items:center!important;
+  gap:5px!important;
+  min-width:34px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:#d8cfc5!important;
+  box-shadow:none!important;
+}
+.master-level-choice:hover{opacity:1!important;transform:none!important}
+.master-level-label{
+  font-family:Federo,Arial,sans-serif!important;
+  font-size:10px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  color:#d8cfc5!important;
+}
+.master-level-dot{
+  width:18px!important;
+  height:18px!important;
+  border-radius:50%!important;
+  border:1px solid rgba(238,230,220,.58)!important;
+  background:rgba(23,26,27,.45)!important;
+  box-shadow:none!important;
+}
+.master-level-choice.active .master-level-dot{
+  background:goldenrod!important;
+  border-color:#f1ece5!important;
+  box-shadow:0 0 0 2px rgba(218,165,32,.17)!important;
+}
+.master-level-choice.zero.active .master-level-dot{
+  background:#8d8379!important;
+  border-color:#ded5cb!important;
+  box-shadow:none!important;
+}
+.master-level-choice.active .master-level-label{color:goldenrod!important}
+#debito_sap_iniziale_livelli,
+[id^="debito_sap_"][id$="_livelli"]{margin-top:7px!important}
+@media(max-width:720px){
+  .debito-livello-row{grid-template-columns:1fr!important;gap:8px!important;align-items:start!important}
+  .master-level-picker{justify-self:start!important}
+}
+` : ""}
 .kit-preview{margin:12px 0 4px;padding:12px 14px;border:1px solid rgba(201,162,75,.28);border-radius:7px;background:rgba(23,26,27,.28)!important}
 .kit-item{display:flex;gap:9px;align-items:flex-start;padding:5px 0;color:#f2ece4;font-size:13px;line-height:1.4}
 .kit-item>span:first-child{color:goldenrod;flex:none}
@@ -544,6 +658,57 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
     setTimeout(emitHeight,20);
   }
 
+  ${isAdultValues ? `
+  function syncLevelPicker(select){
+    if(!select) return;
+    var picker=select.parentNode&&select.parentNode.querySelector(".master-level-picker");
+    if(!picker) return;
+    var current=parseInt(select.value,10);
+    if(isNaN(current)) current=0;
+    picker.querySelectorAll(".master-level-choice").forEach(function(btn){
+      var value=parseInt(btn.getAttribute("data-value"),10);
+      var active=(current===0 && value===0) || (current>0 && value>0 && value<=current);
+      btn.classList.toggle("active",active);
+    });
+  }
+  function enhanceLevelSelect(select){
+    if(!select || select.classList.contains("master-level-source")) return;
+    select.classList.add("master-level-source");
+    var picker=document.createElement("div");
+    picker.className="master-level-picker";
+    picker.setAttribute("role","group");
+    picker.setAttribute("aria-label","Scegli il Livello");
+    Array.prototype.forEach.call(select.options,function(opt){
+      var value=parseInt(opt.value,10);
+      if(isNaN(value)) return;
+      var btn=document.createElement("button");
+      btn.type="button";
+      btn.className="master-level-choice"+(value===0?" zero":"");
+      btn.setAttribute("data-value",String(value));
+      btn.setAttribute("aria-label",value===0?"Nessun Livello":"Livello "+value);
+      var lab=document.createElement("span");
+      lab.className="master-level-label";
+      lab.textContent=value===0?"—":"Liv "+value;
+      var dot=document.createElement("span");
+      dot.className="master-level-dot";
+      btn.appendChild(lab); btn.appendChild(dot);
+      btn.addEventListener("click",function(){
+        select.value=String(value);
+        select.dispatchEvent(new Event("change",{bubbles:true}));
+        select.dispatchEvent(new Event("input",{bubbles:true}));
+        syncLevelPicker(select);
+      });
+      picker.appendChild(btn);
+    });
+    select.insertAdjacentElement("afterend",picker);
+    select.addEventListener("change",function(){syncLevelPicker(select)});
+    syncLevelPicker(select);
+  }
+  function enhanceWisdomLevels(){
+    document.querySelectorAll('.debito-livello-row select[id*="_liv_"]').forEach(enhanceLevelSelect);
+  }
+  ` : ""}
+
   function ready(){
     try{
       ${isBio ? `
@@ -554,6 +719,16 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
       ` : ""}
       document.addEventListener("input",notify,true);
       document.addEventListener("change",notify,true);
+      ${isAdultValues ? `
+      enhanceWisdomLevels();
+      var wisdomRoot=document.getElementById("screen_sapienze");
+      if(wisdomRoot && window.MutationObserver){
+        new MutationObserver(function(){
+          enhanceWisdomLevels();
+          setTimeout(emitHeight,10);
+        }).observe(wisdomRoot,{childList:true,subtree:true});
+      }
+      ` : ""}
       document.addEventListener("click",function(ev){
         var t=ev.target&&ev.target.closest?ev.target.closest("button"):null;
         if(t && (t.id==="continua_btn" || t.id==="indietro_btn")){
@@ -577,7 +752,17 @@ button.secondary{background:transparent!important;color:#f2ece4!important;border
 }
 function buildChild(kind,type){
   const key=frameKeys[type][kind];
-  const src=decode64(PAYLOAD[key]);
+  let src=decode64(PAYLOAD[key]);
+  if(kind==="bio" && type==="adult"){
+    src=src.replace(
+      /<input\s+type="text"\s+id="razza"[^>]*>/i,
+      '<select id="razza"><option value="">— seleziona —</option><option value="Umana">Umana</option><option value="Mezzogigante">Mezzogigante</option><option value="Mezzelfo">Mezzelfo</option><option value="Mezzoveela">Mezzoveela</option><option value="Metamorfomagus">Metamorfomagus</option><option value="Licantropo">Licantropo</option></select>'
+    );
+    src=src.replace(
+      /(<input\s+type="text"\s+id="nascita"[^>]*>)/i,
+      '$1<div class="master-mini-hint">Se vuoi usare la Crescita a Debito, ricorda che alcune Fasce richiedono un\'età minima.</div>'
+    );
+  }
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${src}${childEnhancements(kind,type)}</body></html>`;
 }
 function loadFrame(kind){
@@ -657,13 +842,27 @@ function setJourneyCopy(type){
   }
 }
 
+function configureJourneySteps(type){
+  const adult=type==="adult";
+  const wisdom=$("#wisdomStep");
+  if(wisdom) wisdom.hidden=!adult;
+  const paramsLabel=$("#paramsStepLabel");
+  if(paramsLabel) paramsLabel.textContent=adult ? "Parametri" : "I suoi Valori";
+  const reviewNum=$("#reviewStepNum");
+  if(reviewNum) reviewNum.textContent=adult ? "5" : "4";
+  const total=adult ? 5 : 4;
+  const typeBadge=$("#typeBadge"); if(typeBadge) typeBadge.textContent="Passaggio 1 di "+total;
+  const bioBadge=$("#bioBadge"); if(bioBadge) bioBadge.textContent=(adult?"PG Adulto":"PG Studente")+" · Passaggio 2 di "+total;
+  const reviewBadge=$("#reviewBadge"); if(reviewBadge) reviewBadge.textContent="Passaggio "+total+" di "+total;
+}
+
 function selectType(type){
   if(!TYPE_KEYS.includes(type)) return;
   state.type=type;
   setJourneyCopy(type);
+  configureJourneySteps(type);
   state.loaded.bio=false; state.loaded.values=false;
   $$(".type-card").forEach(c=>c.classList.toggle("selected",c.dataset.type===type));
-  const bioBadge=$("#bioBadge"); if(bioBadge) bioBadge.textContent=(type==="student"?"PG Studente":"PG Adulto")+" · Passaggio 2 di 4";
   const next=$("#typeNext");
   next.disabled=true;
   next.textContent="Prepariamo la tua Scheda PG…";
@@ -731,7 +930,7 @@ function ensureCarryover(doc){
 }
 function friendlyRace(v){
   const raw=String(v||"").trim();
-  return raw || "Umana";
+  return raw || "—";
 }
 function optimizeMergedValuesUI(){
   if(!state.type) return;
@@ -838,9 +1037,15 @@ function setSaveState(saving=false){
   el.classList.toggle("saving",!!saving);
   el.textContent=saving ? "Salvataggio…" : "Progressi salvati";
 }
-function visibleControls(doc){
+function activeValuesRoot(doc){
+  if(!doc || state.type!=="adult") return doc;
+  if(state.step==="wisdom") return doc.getElementById("screen_sapienze") || doc;
+  return doc.getElementById("screen_punti") || doc;
+}
+function visibleControls(doc,kind){
   if(!doc) return [];
-  return $$("input,select,textarea",doc).filter(el=>{
+  const root=kind==="values" ? activeValuesRoot(doc) : doc;
+  return $$("input,select,textarea",root).filter(el=>{
     if(!el.id || ["output","import_input"].includes(el.id) || el.disabled) return false;
     const cs=doc.defaultView.getComputedStyle(el);
     if(cs.display==="none" || cs.visibility==="hidden") return false;
@@ -854,7 +1059,7 @@ function controlFilled(el){
 }
 function updateCompletion(kind){
   const d=currentDoc(kind); if(!d) return;
-  const controls=visibleControls(d);
+  const controls=visibleControls(d,kind);
   const filled=controls.filter(controlFilled).length;
   const total=controls.length;
   const pct=total ? Math.round((filled/total)*100) : 0;
@@ -878,7 +1083,8 @@ function buildSectionNav(kind){
   });
   host.appendChild(topBtn);
   const targets=[];
-  d.querySelectorAll(".panel h2, fieldset legend").forEach(el=>{
+  const navRoot=kind==="values" ? activeValuesRoot(d) : d;
+  navRoot.querySelectorAll(".panel h2, fieldset legend").forEach(el=>{
     const style=d.defaultView.getComputedStyle(el);
     if(style.display==="none" || style.visibility==="hidden" || !el.getClientRects().length) return;
     const label=navLabel(el);
@@ -900,24 +1106,73 @@ function buildSectionNav(kind){
 function refreshStepUI(kind){
   updateCompletion(kind); buildSectionNav(kind);
 }
+function setValuesScreen(step){
+  const d=currentDoc("values");
+  if(!d || state.type!=="adult") return;
+  const inner=d.getElementById("screens_inner");
+  if(!inner) return;
+  inner.classList.toggle("at-sapienze",step==="wisdom");
+}
+function updateValuesStageCopy(step){
+  const title=$("#valuesTitle"), intro=$("#valuesIntro"), badge=$("#valuesBadge");
+  const back=$("#valuesBack"), next=$("#generateAll");
+  if(state.type==="adult"){
+    if(step==="wisdom"){
+      if(title) title.textContent="Scegli le sue Sapienze";
+      if(intro) intro.textContent="Definisci le Sapienze del tuo PG Adulto e, se hai scelto la Crescita a Debito, distribuisci i Livelli seguendo le indicazioni.";
+      if(badge) badge.textContent="Passaggio 4 di 5";
+      if(back) back.textContent="← Torna ai Parametri";
+      if(next){ next.title="Prepara la Scheda"; next.setAttribute("aria-label","Prepara la Scheda"); }
+    }else{
+      if(title) title.textContent="Definisci i suoi Parametri";
+      if(intro) intro.textContent="Completa Parametri, Prestigio e le altre scelte di partenza del tuo PG Adulto. Le informazioni già indicate nella Biografia sono riportate automaticamente.";
+      if(badge) badge.textContent="Passaggio 3 di 5";
+      if(back) back.textContent="← Torna alla Biografia";
+      if(next){ next.title="Continua alle Sapienze"; next.setAttribute("aria-label","Continua alle Sapienze"); }
+    }
+  }else{
+    if(title) title.textContent="Dai forma alle sue capacità";
+    if(intro) intro.textContent="Completa i Valori del tuo PG Studente seguendo le indicazioni dell’Anno di Frequenza e della Razza.";
+    if(badge) badge.textContent="Passaggio 3 di 4";
+    if(back) back.textContent="← Torna alla Biografia";
+    if(next){ next.title="Prepara la Scheda"; next.setAttribute("aria-label","Prepara la Scheda"); }
+  }
+}
 function showStep(step){
+  if(step==="values") step="params";
+  if(step==="wisdom" && state.type!=="adult") step="params";
   if(step!=="type" && !state.type){ step="type"; }
   state.step=step;
-  $$(".stage").forEach(s=>s.classList.toggle("active",s.id==="stage-"+step));
-  const order=["type","bio","values","review"], idx=order.indexOf(step);
-  $$(".step-pill").forEach((p,i)=>{
-    p.classList.toggle("active",i===idx);
-    p.classList.toggle("done",i<idx);
+  const stageId=(step==="params"||step==="wisdom") ? "stage-values" : "stage-"+step;
+  $$(".stage").forEach(st=>st.classList.toggle("active",st.id===stageId));
+
+  const order=state.type==="adult"
+    ? ["type","bio","params","wisdom","review"]
+    : ["type","bio","params","review"];
+  const idx=Math.max(0,order.indexOf(step));
+  $$(".step-pill").forEach(p=>{
+    if(p.hidden) return;
+    const pi=order.indexOf(p.dataset.step);
+    p.classList.toggle("active",p.dataset.step===step);
+    p.classList.toggle("done",pi>=0 && pi<idx);
   });
-  const pf=$("#progressFill"); if(pf) pf.style.setProperty("--progress",String(idx<=0?0:(idx/3)));
-  if(step==="bio" || step==="values") setTimeout(()=>refreshStepUI(step),90);
-  if(step==="values"){
-    syncFromBioToValues(true);
-    setTimeout(()=>syncFromBioToValues(true),120);
-    setTimeout(()=>syncFromBioToValues(true),420);
+  const pf=$("#progressFill");
+  if(pf) pf.style.setProperty("--progress",String(order.length<=1?0:(idx/(order.length-1))));
+
+  if(step==="params" || step==="wisdom"){
+    setValuesScreen(step);
+    updateValuesStageCopy(step);
+    if(step==="params"){
+      syncFromBioToValues(true);
+      setTimeout(()=>syncFromBioToValues(true),100);
+    }
+    setTimeout(()=>refreshStepUI("values"),80);
+    requestFrameHeight("values");
+  }else if(step==="bio"){
+    setTimeout(()=>refreshStepUI("bio"),80);
+    requestFrameHeight("bio");
   }
-  if(step==="bio"||step==="values") requestFrameHeight(step);
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo({top:0,behavior:"auto"});
 }
 function measureFrameContent(kind){
   const fr=state.frames[kind];
@@ -939,10 +1194,12 @@ function requestFrameHeight(kind){
   if(!fr) return;
   const apply=()=>{
     try{
-      // Nessuna altezza minima artificiale: il pulsante successivo segue davvero il contenuto.
-      fr.style.height="1px";
+      // Misuriamo il contenuto senza collassare l'iframe: così la pagina non salta in alto
+      // quando il player compila un campo o cambia una tendina.
       const h=measureFrameContent(kind);
-      fr.style.height=Math.min(Math.max(h,120),12000)+"px";
+      const target=Math.min(Math.max(h,120),12000);
+      const current=parseFloat(fr.style.height)||0;
+      if(Math.abs(current-target)>2) fr.style.height=target+"px";
     }catch(e){}
   };
   setTimeout(apply,20);
@@ -998,7 +1255,7 @@ function renderReview(){
     <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>${pgName?pgName+" · ":""}${typeName}</b><span>Hai completato tutte le parti richieste: manca soltanto un ultimo sguardo prima di pubblicare.</span></div></div>
     <div class="status-row"><span class="status-dot ${warnings.length?"warn":"good"}"></span><div class="status-copy"><b>Biografia</b><span>${warnings.length ? "Prima di pubblicare, controlla questi campi rimasti vuoti: "+warnings.join(", ")+"." : "Le informazioni principali della Biografia sono complete."}</span></div></div>
     <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Valori</b><span>I Valori rispettano le regole previste per il tuo PG.</span></div></div>
-    <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Pronta da pubblicare</b><span>La Scheda PG è già completa di Biografia e Valori: ti basta copiarlo e incollarlo nel forum.</span></div></div>`;
+    <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Pronta da pubblicare</b><span>La Scheda PG è già completa di Biografia e Valori: ti basta copiarla e incollarla nel forum.</span></div></div>`;
 }
 function cleanIssueList(result){
   const list=Array.isArray(result&&result.errors)?result.errors:[];
@@ -1024,10 +1281,17 @@ function showValidationIssues(groups){
     const go=document.createElement("button");
     go.type="button";
     go.className="btn secondary";
-    go.textContent=group.kind==="bio" ? "Vai alla Biografia" : "Vai alla Scheda Valori";
+    let targetStep=group.kind;
+    if(group.kind==="values" && state.type==="adult"){
+      const joined=cleanIssueList(group.result).join(" ").toLowerCase();
+      targetStep=(joined.includes("sapienz") || joined.includes("conoscenz")) ? "wisdom" : "params";
+    }
+    go.textContent=group.kind==="bio"
+      ? "Vai alla Biografia"
+      : (targetStep==="wisdom" ? "Vai alle Sapienze" : "Vai ai Parametri");
     go.addEventListener("click",()=>{
       closeValidationIssues();
-      showStep(group.kind);
+      showStep(targetStep);
     });
     actions.appendChild(go);
     box.append(title,ul,actions);
@@ -1126,8 +1390,22 @@ window.addEventListener("message", async e=>{
 
 $$(".type-card").forEach(c=>c.addEventListener("click",()=>selectType(c.dataset.type)));
 $("#typeNext").addEventListener("click",()=>showStep("bio"));
-$("#bioNext").addEventListener("click",()=>{saveDraft();syncFromBioToValues(true);showStep("values")});
+$("#bioNext").addEventListener("click",()=>{
+  // Il cambio pagina avviene subito al primo click; la sincronizzazione segue subito dopo.
+  saveDraft();
+  showStep("params");
+  setTimeout(()=>syncFromBioToValues(true),0);
+});
+$("#valuesBack").addEventListener("click",()=>{
+  if(state.type==="adult" && state.step==="wisdom") showStep("params");
+  else showStep("bio");
+});
 $("#generateAll").addEventListener("click",()=>{
+  if(state.type==="adult" && state.step==="params"){
+    saveDraft();
+    showStep("wisdom");
+    return;
+  }
   saveDraft();
   const bio=runGenerator("bio");
   const vals=runGenerator("values");
@@ -1143,8 +1421,10 @@ $("#generateAll").addEventListener("click",()=>{
   state.outputs.bio=bio.value; state.outputs.values=vals.value;
   renderReview(); showStep("review");
 });
+$("#reviewBackValues").addEventListener("click",()=>showStep(state.type==="adult"?"wisdom":"params"));
 $$("[data-go]").forEach(b=>b.addEventListener("click",()=>showStep(b.dataset.go)));
 $$(".step-pill").forEach(p=>p.addEventListener("click",()=>{
+  if(p.hidden) return;
   const target=p.dataset.step;
   if(target==="review" && (!state.outputs.bio||!state.outputs.values)) return;
   showStep(target);

@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="it">
 <head>
@@ -47,7 +46,7 @@ body{
 }
 button,input,textarea,select{font:inherit}
 button{cursor:pointer}
-button:focus-visible,.type-card:focus-visible,.step-pill:focus-visible,.section-chip:focus-visible{
+button:focus-visible,.type-card:focus-visible,.source-card:focus-visible,.step-pill:focus-visible,.section-chip:focus-visible{
   outline:2px solid var(--gold-bright);outline-offset:3px;
 }
 .shell{width:min(1250px,calc(100% - 28px));margin:0 auto;padding:28px 0 64px}
@@ -166,6 +165,28 @@ h1{
 .type-name{font:700 24px var(--magic);color:var(--gold-bright);margin-bottom:7px}
 .type-desc{color:#e4ddd4;line-height:1.5;font-size:13px}
 .type-note{margin-top:14px;padding-top:12px;border-top:1px dashed rgba(201,162,75,.30);color:#bdb3a8;font-size:11px;line-height:1.45}
+
+.source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:860px;margin:22px auto 16px}
+.source-card{
+  position:relative;border:1px solid var(--line);background:#171a1b;color:var(--text);border-radius:10px;padding:23px 24px;text-align:left;
+  transition:.16s ease;min-height:168px;box-shadow:0 8px 22px rgba(0,0,0,.16);
+}
+.source-card:hover{transform:translateY(-2px);border-color:var(--gold-bright);box-shadow:0 12px 28px rgba(0,0,0,.25)}
+.source-card.selected{border-color:var(--gold-bright);background:rgba(104,72,48,.72);box-shadow:0 0 0 2px rgba(218,165,32,.14),0 12px 28px rgba(0,0,0,.22)}
+.source-grid.has-selection .source-card:not(.selected){opacity:.58;transform:scale(.985);filter:saturate(.72)}
+.source-grid.has-selection .source-card:not(.selected):hover{opacity:.86;transform:scale(.995) translateY(-1px);filter:saturate(.92)}
+.source-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--gold-bright);color:#171a1b;border:3px solid #f1ece5;box-shadow:0 0 0 1px var(--line);font:700 19px var(--magic);margin-bottom:13px}
+.source-name{font:700 22px var(--magic);color:var(--gold-bright);margin-bottom:7px}
+.source-desc{color:#e4ddd4;line-height:1.5;font-size:13px}
+.source-note{margin-top:11px;color:#bdb3a8;font-size:11px;line-height:1.45}
+.source-import-box{max-width:860px;margin:18px auto 4px;padding:18px 19px;border:1px solid rgba(201,162,75,.52);border-radius:9px;background:rgba(23,26,27,.56)}
+.source-import-box[hidden]{display:none!important}
+.source-import-box label{display:block;margin:0 0 8px;color:var(--cream);font-size:13px}
+.source-import-box textarea{width:100%;min-height:190px;resize:vertical;background:#eeeeee;color:#222;border:1px solid var(--line);border-radius:7px;padding:12px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.source-import-help{margin-top:8px;color:#c8bfb4;font-size:11px;line-height:1.45}
+.source-import-error{margin-top:10px;padding:9px 11px;border-left:3px solid var(--bad);background:rgba(223,119,110,.10);color:#f0c7c3;border-radius:5px;font-size:12px;line-height:1.45}
+.source-import-error[hidden]{display:none!important}
+.source-import-actions{display:flex;justify-content:flex-end;margin-top:12px}
 .frame-shell{background:transparent;border:0;border-radius:0;overflow:hidden}
 .tool-frame{display:block;width:100%;border:0;min-height:0;height:120px;background:#4c392c;color-scheme:dark}
 #stage-bio,#stage-values{background:#4c392c}
@@ -232,7 +253,7 @@ h1{
   .save-state{display:none}.stage{padding:22px 17px}.review-grid{grid-template-columns:1fr}.summary-card{order:-1}
 }
 @media(max-width:620px){
-  .type-grid{grid-template-columns:1fr}.type-card{min-height:auto}.stage-head{display:block}.badge{display:inline-block;margin-top:10px}
+  .type-grid,.source-grid{grid-template-columns:1fr}.type-card,.source-card{min-height:auto}.stage-head{display:block}.badge{display:inline-block;margin-top:10px}
   .step-assist{align-items:flex-start;flex-direction:column}.completion-meter{width:100%;max-width:none}
   .stage-actions{align-items:stretch;flex-direction:column-reverse}.action-group{width:100%}.action-group .btn{flex:1}.save-note{text-align:center}
   #stage-bio .stage-actions,#stage-values .stage-actions{display:grid;grid-template-columns:1fr auto 1fr}
@@ -264,11 +285,12 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
       <div class="progress-wrap">
         <div class="progress" aria-label="Avanzamento">
           <span class="progress-fill" id="progressFill" aria-hidden="true"></span>
-          <button class="step-pill active" data-step="type"><span class="num">1</span><span class="label">Il tuo PG</span></button>
-          <button class="step-pill" data-step="bio"><span class="num">2</span><span class="label">La sua storia</span></button>
-          <button class="step-pill" data-step="params"><span class="num">3</span><span class="label" id="paramsStepLabel">I suoi Valori</span></button>
-          <button class="step-pill adult-only-step" data-step="wisdom" id="wisdomStep" hidden><span class="num">4</span><span class="label">Sapienze</span></button>
-          <button class="step-pill" data-step="review"><span class="num" id="reviewStepNum">4</span><span class="label">Scheda pronta</span></button>
+          <button class="step-pill active" data-step="start"><span class="num">1</span><span class="label">Inizio</span></button>
+          <button class="step-pill" data-step="type" hidden><span class="num">2</span><span class="label">Il tuo PG</span></button>
+          <button class="step-pill" data-step="bio" hidden><span class="num">3</span><span class="label">La sua storia</span></button>
+          <button class="step-pill" data-step="params" hidden><span class="num">4</span><span class="label" id="paramsStepLabel">I suoi Valori</span></button>
+          <button class="step-pill adult-only-step" data-step="wisdom" id="wisdomStep" hidden><span class="num">5</span><span class="label">Sapienze</span></button>
+          <button class="step-pill" data-step="review" hidden><span class="num">5</span><span class="label" id="reviewStepLabel">Scheda pronta</span></button>
         </div>
       </div>
       <div class="top-actions">
@@ -277,13 +299,13 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
       </div>
     </div>
 
-    <section class="stage active" id="stage-type">
+    <section class="stage" id="stage-type">
       <div class="stage-head">
         <div>
           <h2 class="stage-title">Da dove comincia la tua storia?</h2>
           <p class="stage-sub">Ogni storia comincia in modo diverso: scegli se vuoi creare un PG Studente a Hogwarts oppure un PG Adulto già immerso nel Mondo Magico.</p>
         </div>
-        <span class="badge" id="typeBadge">Passaggio 1 di 4</span>
+        <span class="badge" id="typeBadge">Passaggio 2</span>
       </div>
       <div class="type-grid">
         <button class="type-card" data-type="student">
@@ -302,8 +324,47 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
       <div class="stage-actions">
         <span class="save-note">Puoi fermarti quando vuoi: i progressi restano salvati su questo dispositivo.</span>
         <div class="action-group">
-          <button class="btn primary" id="typeNext" disabled>Comincia →</button>
+          <button class="btn primary" id="typeNext" disabled>Continua →</button>
         </div>
+      </div>
+    </section>
+
+
+    <section class="stage active" id="stage-start">
+      <div class="stage-head">
+        <div>
+          <h2 class="stage-title">Cosa vuoi fare?</h2>
+          <p class="stage-sub">Puoi creare una nuova Scheda PG completa oppure riprendere una Biografia già esistente per aggiornarla.</p>
+        </div>
+        <span class="badge" id="startBadge">Passaggio 1</span>
+      </div>
+
+      <div class="source-grid" id="modeGrid">
+        <button class="source-card" type="button" data-mode="new">
+          <div class="source-icon" aria-hidden="true">＋</div>
+          <div class="source-name">Nuova Scheda PG</div>
+          <div class="source-desc">Crea un nuovo PG Studente o PG Adulto, dalla Biografia fino ai Valori.</div>
+          <div class="source-note">Nel passaggio successivo sceglierai che tipo di PG vuoi creare.</div>
+        </button>
+        <button class="source-card" type="button" data-mode="edit">
+          <div class="source-icon" aria-hidden="true">✎</div>
+          <div class="source-name">Modifica una Biografia</div>
+          <div class="source-desc">Incolla una Scheda Biografica già esistente: il Generatore riconoscerà da solo se appartiene a un PG Studente o a un PG Adulto.</div>
+          <div class="source-note">Viene modificata e rigenerata soltanto la Biografia. Parametri, Sapienze e Valori restano esclusi.</div>
+        </button>
+      </div>
+
+      <div class="source-import-box" id="sourceImportBox" hidden>
+        <label for="sourceImportText">Incolla la Scheda Biografica da modificare</label>
+        <textarea id="sourceImportText" placeholder="Incolla qui il codice della Scheda Biografica già esistente..."></textarea>
+        <div class="source-import-help">Puoi incollare una Biografia di un PG Studente o di un PG Adulto: il Generatore riconoscerà automaticamente il tipo di PG e recupererà i campi compilati.</div>
+        <div class="source-import-error" id="sourceImportError" hidden></div>
+        <div class="source-import-actions"><button class="btn primary" id="sourceImportBtn" type="button">Recupera la Biografia →</button></div>
+      </div>
+
+      <div class="stage-actions">
+        <span class="save-note">Puoi fermarti quando vuoi: i progressi restano salvati su questo dispositivo.</span>
+        <div class="action-group next-action"><button class="btn primary forward-arrow" id="startNext" type="button" disabled title="Continua" aria-label="Continua">→</button></div>
       </div>
     </section>
 
@@ -323,8 +384,7 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
       <div class="frame-shell"><iframe class="tool-frame" id="bioFrame" title="Scheda biografica"></iframe></div>
       <div class="stage-actions">
         <div class="action-group">
-          <button class="btn secondary" data-go="type">← Cambia percorso</button>
-          <button class="btn ghost" id="importBioBtn">Riprendi una Scheda PG esistente</button>
+          <button class="btn secondary" id="bioBack">← Torna indietro</button>
         </div>
         <div class="action-group next-action"><button class="btn primary forward-arrow" id="bioNext" title="Continua con i Valori" aria-label="Continua con i Valori">→</button></div>
       </div>
@@ -353,14 +413,14 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
     <section class="stage" id="stage-review">
       <div class="stage-head">
         <div>
-          <h2 class="stage-title">La tua Scheda è pronta</h2>
-          <p class="stage-sub">Hai finito. Biografia e Valori sono già nell’ordine giusto: copia la Scheda PG completa e incollala nel forum.</p>
+          <h2 class="stage-title" id="reviewTitle">La tua Scheda è pronta</h2>
+          <p class="stage-sub" id="reviewIntro">Hai finito. Biografia e Valori sono già nell’ordine giusto: copia la Scheda PG completa e incollala nel forum.</p>
         </div>
         <span class="badge" id="reviewBadge">Passaggio 4 di 4</span>
       </div>
       <div class="review-grid">
         <div class="output-card">
-          <h3>Scheda PG completa</h3>
+          <h3 id="reviewOutputTitle">Scheda PG completa</h3>
           <textarea id="combinedOutput" spellcheck="false"></textarea>
           <div class="copy-row">
             <button class="btn primary" id="copyAll">Copia la Scheda PG completa</button>
@@ -373,7 +433,7 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
           <div id="reviewStatus"></div>
           <div class="copy-row" style="margin-top:18px">
             <button class="btn secondary" id="reviewBackValues">← Torna ai Valori</button>
-            <button class="btn ghost" data-go="bio">Torna alla Biografia</button>
+            <button class="btn ghost" id="reviewBackBio">Torna alla Biografia</button>
           </div>
         </aside>
       </div>
@@ -382,18 +442,6 @@ h1,.stage-title,.type-name,.output-card h3,.summary-card h3,.modal-card h3{
 </div>
 
 <div class="toast" id="toast"></div>
-
-<div class="modal" id="importModal" aria-hidden="true">
-  <div class="modal-card">
-    <h3>Riprendi una Scheda PG</h3>
-    <p>Hai già una Scheda PG creata con il vecchio Generatore? Incolla qui la parte Biografica: recupereremo le informazioni già inserite e potrai continuare senza riscriverle.</p>
-    <textarea id="importText" placeholder="Incolla qui la parte Biografica della tua Scheda PG..."></textarea>
-    <div class="modal-actions">
-      <button class="btn secondary" id="closeImport">Annulla</button>
-      <button class="btn primary" id="runImport">Recupera la Scheda PG</button>
-    </div>
-  </div>
-</div>
 
 <div class="modal validation-modal" id="validationModal" aria-hidden="true">
   <div class="modal-card validation-card" role="dialog" aria-modal="true" aria-labelledby="validationTitle">
@@ -417,7 +465,7 @@ const frameKeys = {
   adult:{bio:"adult_bio", values:"adult_values"}
 };
 const state = {
-  type:null, step:"type", frames:{bio:null,values:null}, outputs:{bio:"",values:""},
+  mode:null, type:null, step:"start", pendingImport:null, frames:{bio:null,values:null}, outputs:{bio:"",values:""},
   loaded:{bio:false,values:false}, restoring:false
 };
 
@@ -785,17 +833,24 @@ function draft(){
 function storeDraft(obj){
   try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(obj)); return true; }catch(e){ return false; }
 }
+function draftBucketKey(){
+  if(!state.type) return "";
+  return state.mode==="edit" ? "edit_"+state.type : state.type;
+}
 function saveDraft(){
   if(state.restoring || !state.type) return;
   setSaveState(true);
   const all=draft();
+  all.selectedMode=state.mode||"new";
   all.selectedType=state.type;
-  all[state.type]=all[state.type]||{};
+  const bucket=draftBucketKey();
+  all[bucket]=all[bucket]||{};
   ["bio","values"].forEach(kind=>{
+    if(state.mode==="edit" && kind==="values") return;
     const fr=state.frames[kind];
     try{
       if(fr && fr.contentDocument && state.loaded[kind]){
-        all[state.type][kind]=snapshotDoc(fr.contentDocument);
+        all[bucket][kind]=snapshotDoc(fr.contentDocument);
       }
     }catch(e){}
   });
@@ -809,7 +864,8 @@ function setControlValue(el,val){
 }
 async function restoreFrame(kind){
   if(!state.type) return;
-  const data=((draft()[state.type]||{})[kind]||{});
+  const bucket=draftBucketKey();
+  const data=((draft()[bucket]||{})[kind]||{});
   const fr=state.frames[kind];
   if(!fr || !fr.contentDocument) return;
   state.restoring=true;
@@ -834,41 +890,155 @@ async function restoreFrame(kind){
 function setJourneyCopy(type){
   const bioIntro=$("#bioIntro"), valuesIntro=$("#valuesIntro");
   if(type==="student"){
-    if(bioIntro) bioIntro.textContent="Racconta chi è il tuo PG Studente: le sue origini, ciò che lo ha portato a Hogwarts, il suo Aspetto, il suo Carattere e le sue Relazioni. Compila una sezione alla volta e prenditi tutto il tempo che ti serve.";
+    if(bioIntro) bioIntro.textContent=state.mode==="edit"
+      ? "Modifica le informazioni del tuo PG Studente. I campi della Biografia che hai incollato sono già stati recuperati: aggiorna soltanto ciò che ti serve."
+      : "Racconta chi è il tuo PG Studente: le sue origini, ciò che lo ha portato a Hogwarts, il suo Aspetto, il suo Carattere e le sue Relazioni. Compila una sezione alla volta e prenditi tutto il tempo che ti serve.";
     if(valuesIntro) valuesIntro.textContent="Ora completa ciò che definisce il tuo PG Studente in gioco: Parametri, Piano di Studi e Conoscenze. Segui le indicazioni dell’Anno di Frequenza e della Razza: se qualcosa non rispetta le regole, il Generatore ti indicherà subito cosa sistemare.";
   }else{
-    if(bioIntro) bioIntro.textContent="Racconta il percorso del tuo PG Adulto nel Mondo Magico: origini, formazione, Mestiere, Relazioni, Aspetto e Carattere. È qui che prende forma tutto ciò che gli è accaduto prima di entrare in gioco.";
+    if(bioIntro) bioIntro.textContent=state.mode==="edit"
+      ? "Modifica le informazioni del tuo PG Adulto. La Biografia che hai incollato è stata riconosciuta e i campi sono già compilati: aggiorna soltanto ciò che è cambiato."
+      : "Racconta il percorso del tuo PG Adulto nel Mondo Magico: origini, formazione, Mestiere, Relazioni, Aspetto e Carattere. È qui che prende forma tutto ciò che gli è accaduto prima di entrare in gioco.";
     if(valuesIntro) valuesIntro.textContent="Ora definisci ciò che il tuo PG Adulto sa fare: completa Parametri, Prestigio e Sapienze e, se lo desideri, scegli la Crescita a Debito. Se il suo Mestiere prevede un Kit di Base, potrai scegliere qui anche i benefici che richiedono una decisione del player.";
   }
 }
 
-function configureJourneySteps(type){
-  const adult=type==="adult";
-  const wisdom=$("#wisdomStep");
-  if(wisdom) wisdom.hidden=!adult;
-  const paramsLabel=$("#paramsStepLabel");
-  if(paramsLabel) paramsLabel.textContent=adult ? "Parametri" : "I suoi Valori";
-  const reviewNum=$("#reviewStepNum");
-  if(reviewNum) reviewNum.textContent=adult ? "5" : "4";
-  const total=adult ? 5 : 4;
-  const typeBadge=$("#typeBadge"); if(typeBadge) typeBadge.textContent="Passaggio 1 di "+total;
-  const bioBadge=$("#bioBadge"); if(bioBadge) bioBadge.textContent=(adult?"PG Adulto":"PG Studente")+" · Passaggio 2 di "+total;
-  const reviewBadge=$("#reviewBadge"); if(reviewBadge) reviewBadge.textContent="Passaggio "+total+" di "+total;
+function journeyOrder(){
+  if(state.mode==="edit"){
+    return state.type ? ["start","bio","review"] : ["start"];
+  }
+  if(state.mode==="new"){
+    if(!state.type) return ["start","type"];
+    return state.type==="adult"
+      ? ["start","type","bio","params","wisdom","review"]
+      : ["start","type","bio","params","review"];
+  }
+  return ["start"];
 }
 
-function selectType(type){
-  if(!TYPE_KEYS.includes(type)) return;
-  state.type=type;
-  setJourneyCopy(type);
-  configureJourneySteps(type);
-  state.loaded.bio=false; state.loaded.values=false;
-  $$(".type-card").forEach(c=>c.classList.toggle("selected",c.dataset.type===type));
-  const next=$("#typeNext");
-  next.disabled=true;
-  next.textContent="Prepariamo la tua Scheda PG…";
-  const all=draft(); all.selectedType=type; storeDraft(all);
-  loadFrame("bio"); loadFrame("values");
+function updateJourneyChrome(){
+  const order=journeyOrder();
+  const reviewLabel=$("#reviewStepLabel");
+  if(reviewLabel) reviewLabel.textContent=state.mode==="edit" ? "Biografia pronta" : "Scheda pronta";
+  const paramsLabel=$("#paramsStepLabel");
+  if(paramsLabel) paramsLabel.textContent=state.type==="adult" ? "Parametri" : "I suoi Valori";
+
+  $$(".step-pill").forEach(p=>{
+    const pos=order.indexOf(p.dataset.step);
+    p.hidden=pos<0;
+    if(pos>=0){
+      const n=p.querySelector(".num");
+      if(n) n.textContent=String(pos+1);
+    }
+  });
+
+  const total=order.length;
+  const badgeFor=(step,extra="")=>{
+    const idx=order.indexOf(step);
+    return idx<0 ? "" : (extra ? extra+" · " : "")+"Passaggio "+(idx+1)+" di "+total;
+  };
+  const startBadge=$("#startBadge"); if(startBadge) startBadge.textContent=badgeFor("start")||"Passaggio 1";
+  const typeBadge=$("#typeBadge"); if(typeBadge) typeBadge.textContent=badgeFor("type")||"Passaggio 2";
+  const bioBadge=$("#bioBadge");
+  if(bioBadge && state.type) bioBadge.textContent=badgeFor("bio",state.type==="adult"?"PG Adulto":"PG Studente");
+  const reviewBadge=$("#reviewBadge"); if(reviewBadge) reviewBadge.textContent=badgeFor("review");
 }
+
+
+function setMode(mode){
+  if(mode!=="new" && mode!=="edit") return;
+  state.mode=mode;
+  state.outputs.bio="";
+  state.outputs.values="";
+  state.pendingImport=null;
+  const grid=$("#modeGrid");
+  if(grid) grid.classList.add("has-selection");
+  $$('[data-mode]').forEach(c=>c.classList.toggle("selected",c.dataset.mode===mode));
+  const box=$("#sourceImportBox"), next=$("#startNext"), err=$("#sourceImportError");
+  if(err){err.hidden=true;err.textContent="";}
+
+  if(mode==="edit"){
+    state.type=null;
+    state.loaded.bio=false;
+    state.loaded.values=false;
+    state.frames.bio=null;
+    state.frames.values=null;
+    $("#bioFrame").srcdoc="";
+    $("#valuesFrame").srcdoc="";
+    if(box) box.hidden=false;
+    if(next) next.disabled=true;
+    setTimeout(()=>$("#sourceImportText")?.focus(),40);
+  }else{
+    state.type=null;
+    state.loaded.bio=false;
+    state.loaded.values=false;
+    state.frames.bio=null;
+    state.frames.values=null;
+    $("#bioFrame").srcdoc="";
+    $("#valuesFrame").srcdoc="";
+    if(box) box.hidden=true;
+    if(next) next.disabled=false;
+  }
+
+  const all=draft();
+  all.selectedMode=mode;
+  delete all.selectedType;
+  storeDraft(all);
+  updateJourneyChrome();
+}
+
+function detectBioType(raw){
+  const s=String(raw||"").replace(/[\u00AD\u200B\u200C\u200D\u2060\uFEFF]/g,"");
+  const adultStrong=/Categoria\s*Magica\s*e\s*Mestiere\s*:/i.test(s) || /Scuola\s*di\s*Magia\s*e\s*Casa\s*Frequentata\s*:/i.test(s);
+  const studentStrong=/Anno\s*di\s*Frequenza\s*:/i.test(s);
+  if(adultStrong && !studentStrong) return "adult";
+  if(studentStrong && !adultStrong) return "student";
+
+  const adultClass=/\b(?:schedanumen|schedaanimus|schedaars|schedavoluntas|schedasensus|schedaacumen|schedaintracc)\b/i.test(s);
+  const studentClass=/\b(?:schedagrifo|schedacorvo|schedatasso|schedaserpe)\b/i.test(s);
+  if(adultClass && !studentClass) return "adult";
+  if(studentClass && !adultClass) return "student";
+
+  if(adultStrong) return "adult";
+  if(studentStrong) return "student";
+  return "";
+}
+
+function showSourceImportError(message){
+  const err=$("#sourceImportError");
+  if(!err) return;
+  err.textContent=message;
+  err.hidden=false;
+}
+
+function selectType(type,options={}){
+  if(!TYPE_KEYS.includes(type)) return;
+  const editImport=!!options.editImport;
+  state.type=type;
+  state.outputs.bio="";
+  state.outputs.values="";
+  setJourneyCopy(type);
+  state.loaded.bio=false;
+  state.loaded.values=false;
+  $$(".type-card").forEach(c=>c.classList.toggle("selected",c.dataset.type===type));
+
+  const all=draft();
+  all.selectedMode=state.mode||"new";
+  all.selectedType=type;
+  storeDraft(all);
+
+  if(editImport || state.mode==="edit"){
+    state.frames.values=null;
+    $("#valuesFrame").srcdoc="";
+    loadFrame("bio");
+  }else{
+    const next=$("#typeNext");
+    if(next){ next.disabled=true; next.textContent="Prepariamo la tua Scheda PG…"; }
+    loadFrame("bio");
+    loadFrame("values");
+  }
+  updateJourneyChrome();
+}
+
 function currentDoc(kind){
   const fr=state.frames[kind];
   return fr && fr.contentDocument ? fr.contentDocument : null;
@@ -1120,35 +1290,40 @@ function updateValuesStageCopy(step){
     if(step==="wisdom"){
       if(title) title.textContent="Scegli le sue Sapienze";
       if(intro) intro.textContent="Definisci le Sapienze del tuo PG Adulto e, se hai scelto la Crescita a Debito, distribuisci i Livelli seguendo le indicazioni.";
-      if(badge) badge.textContent="Passaggio 4 di 5";
+      if(badge) badge.textContent="Passaggio 5 di 6";
       if(back) back.textContent="← Torna ai Parametri";
       if(next){ next.title="Prepara la Scheda"; next.setAttribute("aria-label","Prepara la Scheda"); }
     }else{
       if(title) title.textContent="Definisci i suoi Parametri";
       if(intro) intro.textContent="Completa Parametri, Prestigio e le altre scelte di partenza del tuo PG Adulto. Le informazioni già indicate nella Biografia sono riportate automaticamente.";
-      if(badge) badge.textContent="Passaggio 3 di 5";
+      if(badge) badge.textContent="Passaggio 4 di 6";
       if(back) back.textContent="← Torna alla Biografia";
       if(next){ next.title="Continua alle Sapienze"; next.setAttribute("aria-label","Continua alle Sapienze"); }
     }
   }else{
     if(title) title.textContent="Dai forma alle sue capacità";
     if(intro) intro.textContent="Completa i Valori del tuo PG Studente seguendo le indicazioni dell’Anno di Frequenza e della Razza.";
-    if(badge) badge.textContent="Passaggio 3 di 4";
+    if(badge) badge.textContent="Passaggio 4 di 5";
     if(back) back.textContent="← Torna alla Biografia";
     if(next){ next.title="Prepara la Scheda"; next.setAttribute("aria-label","Prepara la Scheda"); }
   }
 }
+
 function showStep(step){
   if(step==="values") step="params";
   if(step==="wisdom" && state.type!=="adult") step="params";
-  if(step!=="type" && !state.type){ step="type"; }
+
+  if(!state.mode && step!=="start") step="start";
+  if(state.mode==="new" && step!=="start" && step!=="type" && !state.type) step="type";
+  if(state.mode==="edit" && step!=="start" && !state.type) step="start";
+  if(state.mode==="edit" && ["type","params","wisdom"].includes(step)) step=state.type?"bio":"start";
+
   state.step=step;
+  updateJourneyChrome();
   const stageId=(step==="params"||step==="wisdom") ? "stage-values" : "stage-"+step;
   $$(".stage").forEach(st=>st.classList.toggle("active",st.id===stageId));
 
-  const order=state.type==="adult"
-    ? ["type","bio","params","wisdom","review"]
-    : ["type","bio","params","review"];
+  const order=journeyOrder();
   const idx=Math.max(0,order.indexOf(step));
   $$(".step-pill").forEach(p=>{
     if(p.hidden) return;
@@ -1174,6 +1349,7 @@ function showStep(step){
   }
   window.scrollTo({top:0,behavior:"auto"});
 }
+
 function measureFrameContent(kind){
   const fr=state.frames[kind];
   if(!fr||!fr.contentDocument) return 120;
@@ -1244,19 +1420,41 @@ function bioWarnings(){
   if(state.type==="adult"&&getVal(d,"mestiere")==="Mestiere Libero"&&!String(getVal(d,"mestiere_libero")||"").trim())missing.push("Mestiere Libero");
   return missing;
 }
+
 function renderReview(){
   const warnings=bioWarnings();
-  $("#combinedOutput").value=state.outputs.bio+"\n\n"+state.outputs.values;
+  const editOnly=state.mode==="edit";
   const typeName=state.type==="student"?"PG Studente":"PG Adulto";
   const bd=currentDoc("bio");
   const pgName=String(getVal(bd,"nome")||"").trim();
-  const chars=state.outputs.bio.length+state.outputs.values.length+2;
-  $("#reviewStatus").innerHTML=`
-    <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>${pgName?pgName+" · ":""}${typeName}</b><span>Hai completato tutte le parti richieste: manca soltanto un ultimo sguardo prima di pubblicare.</span></div></div>
-    <div class="status-row"><span class="status-dot ${warnings.length?"warn":"good"}"></span><div class="status-copy"><b>Biografia</b><span>${warnings.length ? "Prima di pubblicare, controlla questi campi rimasti vuoti: "+warnings.join(", ")+"." : "Le informazioni principali della Biografia sono complete."}</span></div></div>
-    <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Valori</b><span>I Valori rispettano le regole previste per il tuo PG.</span></div></div>
-    <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Pronta da pubblicare</b><span>La Scheda PG è già completa di Biografia e Valori: ti basta copiarla e incollarla nel forum.</span></div></div>`;
+
+  const out=editOnly ? state.outputs.bio : state.outputs.bio+"\n\n"+state.outputs.values;
+  $("#combinedOutput").value=out;
+  $("#reviewTitle").textContent=editOnly ? "La Biografia aggiornata è pronta" : "La tua Scheda è pronta";
+  $("#reviewIntro").textContent=editOnly
+    ? "Controlla un’ultima volta la Biografia aggiornata, poi copiala e sostituiscila a quella precedente sul forum."
+    : "Hai finito. Biografia e Valori sono già nell’ordine giusto: copia la Scheda PG completa e incollala nel forum.";
+  $("#reviewOutputTitle").textContent=editOnly ? "Biografia aggiornata" : "Scheda PG completa";
+  $("#copyAll").textContent=editOnly ? "Copia la Biografia aggiornata" : "Copia la Scheda PG completa";
+  $("#copyBio").hidden=editOnly;
+  $("#copyValues").hidden=editOnly;
+  $("#reviewBackValues").hidden=editOnly;
+  $("#reviewBackBio").textContent=editOnly ? "← Torna alla Biografia" : "Torna alla Biografia";
+
+  if(editOnly){
+    $("#reviewStatus").innerHTML=`
+      <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>${pgName?pgName+" · ":""}${typeName}</b><span>La Biografia è stata riconosciuta e aggiornata come ${typeName}.</span></div></div>
+      <div class="status-row"><span class="status-dot ${warnings.length?"warn":"good"}"></span><div class="status-copy"><b>Biografia</b><span>${warnings.length ? "Prima di pubblicare, controlla questi campi rimasti vuoti: "+warnings.join(", ")+"." : "Le informazioni principali della Biografia sono complete."}</span></div></div>
+      <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Pronta da sostituire</b><span>È stata rigenerata soltanto la Biografia: Parametri, Sapienze e Valori non sono stati inclusi né modificati.</span></div></div>`;
+  }else{
+    $("#reviewStatus").innerHTML=`
+      <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>${pgName?pgName+" · ":""}${typeName}</b><span>Hai completato tutte le parti richieste: manca soltanto un ultimo sguardo prima di pubblicare.</span></div></div>
+      <div class="status-row"><span class="status-dot ${warnings.length?"warn":"good"}"></span><div class="status-copy"><b>Biografia</b><span>${warnings.length ? "Prima di pubblicare, controlla questi campi rimasti vuoti: "+warnings.join(", ")+"." : "Le informazioni principali della Biografia sono complete."}</span></div></div>
+      <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Valori</b><span>I Valori rispettano le regole previste per il tuo PG.</span></div></div>
+      <div class="status-row"><span class="status-dot good"></span><div class="status-copy"><b>Pronta da pubblicare</b><span>La Scheda PG è già completa di Biografia e Valori: ti basta copiarla e incollarla nel forum.</span></div></div>`;
+  }
 }
+
 function cleanIssueList(result){
   const list=Array.isArray(result&&result.errors)?result.errors:[];
   return list.map(x=>String(x||"").replace(/\s+/g," ").trim()).filter(Boolean);
@@ -1319,37 +1517,65 @@ async function copyText(text){
     toast("Copiato negli appunti");
   }catch(e){ toast("Seleziona il testo e copialo manualmente"); }
 }
-function openImport(){
-  $("#importText").value="";
-  $("#importModal").classList.add("open"); $("#importModal").setAttribute("aria-hidden","false");
-  setTimeout(()=>$("#importText").focus(),20);
-}
-function closeImport(){
-  $("#importModal").classList.remove("open"); $("#importModal").setAttribute("aria-hidden","true");
-}
-function runBioImport(){
-  const text=$("#importText").value.trim(); if(!text){toast("Incolla prima la Biografia che vuoi recuperare");return}
+
+function applyBioImport(raw){
   const d=currentDoc("bio");
-  if(!d){toast("Attendi un momento e riprova");return}
+  if(!d){ showSourceImportError("La Biografia si sta ancora preparando. Attendi un momento e riprova."); return false; }
   try{
-    const input=d.getElementById("import_input"), btn=d.getElementById("import_btn");
-    if(!input||!btn){toast("Non riesco a recuperare la Biografia");return}
-    input.value=text;
+    const input=d.getElementById("import_input"), btn=d.getElementById("import_btn"), err=d.getElementById("import_error");
+    if(!input||!btn){
+      showSourceImportError("Non riesco a recuperare questa Biografia. Controlla di aver incollato il codice completo.");
+      return false;
+    }
+    input.value=raw;
+    if(err){err.classList.remove("show");err.textContent="";}
     btn.click();
-    const err=d.getElementById("import_error");
     if(err && err.classList.contains("show")){
-      toast(err.textContent.trim()||"Codice non riconosciuto"); return;
+      showSourceImportError(err.textContent.trim()||"Il codice non è stato riconosciuto come una Scheda Biografica valida.");
+      return false;
     }
     const sf=d.getElementById("screen_form"); if(sf) sf.style.display="block";
-    saveDraft(); closeImport(); requestFrameHeight("bio"); toast("Biografia recuperata");
-  }catch(e){toast("Non riesco a riconoscere questa Biografia");}
-}
-function resetCurrent(){
-  if(!state.type){
-    try{localStorage.removeItem(STORAGE_KEY)}catch(e){} location.reload(); return;
+    state.pendingImport=null;
+    state.outputs.bio="";
+    state.outputs.values="";
+    saveDraft();
+    requestFrameHeight("bio");
+    setTimeout(()=>refreshStepUI("bio"),80);
+    toast(state.type==="adult"?"Biografia del PG Adulto recuperata":"Biografia del PG Studente recuperata");
+    showStep("bio");
+    return true;
+  }catch(e){
+    showSourceImportError("Non riesco a leggere questa Biografia. Controlla di aver incollato il codice completo senza modifiche.");
+    return false;
   }
-  if(!confirm("Vuoi cancellare tutti i progressi del tuo PG "+(state.type==="student"?"Studente":"Adulto")+" e ricominciare da capo?")) return;
-  const all=draft(); delete all[state.type]; delete all.selectedType;
+}
+
+function startBioImport(){
+  const text=String($("#sourceImportText").value||"").trim();
+  if(!text){ showSourceImportError("Incolla prima il codice della Scheda Biografica che vuoi modificare."); return; }
+  const type=detectBioType(text);
+  if(!type){
+    showSourceImportError("Non riesco a capire se questa Biografia appartiene a un PG Studente o a un PG Adulto. Controlla di aver incollato il codice completo della sola Scheda Biografica.");
+    return;
+  }
+  const err=$("#sourceImportError"); if(err){err.hidden=true;err.textContent="";}
+  state.mode="edit";
+  state.pendingImport={type,text};
+  const btn=$("#sourceImportBtn");
+  if(btn){btn.disabled=true;btn.textContent="Recupero della Biografia…";}
+  selectType(type,{editImport:true});
+}
+
+function resetCurrent(){
+  const label=state.mode==="edit" ? "la Biografia che stai modificando" : "i progressi di questa Scheda PG";
+  if(!confirm("Vuoi cancellare "+label+" e ricominciare da capo?")) return;
+  const all=draft();
+  if(state.type){
+    delete all[state.type];
+    delete all["edit_"+state.type];
+  }
+  delete all.selectedMode;
+  delete all.selectedType;
   storeDraft(all);
   location.reload();
 }
@@ -1358,49 +1584,96 @@ window.addEventListener("message", async e=>{
   const m=e.data;
   if(!m||m.__felixMaster!==true) return;
   if(m.pgType && m.pgType!==state.type) return;
+
   if(m.type==="height"){
     const fr=m.kind==="bio"?$("#bioFrame"):$("#valuesFrame");
+    if(!fr) return;
     if(!(m.kind==="values" && state.type==="adult")){
       fr.style.height=Math.min(Math.max(Number(m.height)||120,120),12000)+"px";
-    } else {
+    }else{
       requestFrameHeight("values");
     }
   }
+
   if(m.type==="ready"){
     state.loaded[m.kind]=true;
+
+    if(state.mode==="edit" && m.kind==="bio" && state.pendingImport){
+      const pending=state.pendingImport;
+      const ok=applyBioImport(pending.text);
+      const btn=$("#sourceImportBtn");
+      if(btn){btn.disabled=false;btn.textContent="Recupera la Biografia →";}
+      if(!ok){
+        state.pendingImport=null;
+        showStep("start");
+      }
+      return;
+    }
+
     await restoreFrame(m.kind);
-    if(m.kind==="bio" && state.type) syncFromBioToValues(false);
-    if(m.kind==="values" && state.type) optimizeMergedValuesUI();
+    if(m.kind==="bio" && state.type && state.mode==="new") syncFromBioToValues(false);
+    if(m.kind==="values" && state.type && state.mode==="new") optimizeMergedValuesUI();
     requestFrameHeight(m.kind);
     setTimeout(()=>refreshStepUI(m.kind),120);
-    if(state.loaded.bio && state.loaded.values){
+
+    if(state.mode==="new" && state.loaded.bio && state.loaded.values){
       const next=$("#typeNext");
-      next.disabled=false;
-      next.textContent="Comincia →";
+      if(next){next.disabled=false;next.textContent="Comincia →";}
+    }
+    if(state.mode==="edit" && state.resumeAfterLoad && m.kind==="bio"){
+      state.resumeAfterLoad=false;
+      showStep("bio");
     }
   }
+
   if(m.type==="changed"){
     setSaveState(true);
-    if(m.kind==="values") optimizeMergedValuesUI();
+    if(m.kind==="values" && state.mode==="new") optimizeMergedValuesUI();
     requestFrameHeight(m.kind);
     clearTimeout(saveDraft._debounce);
     saveDraft._debounce=setTimeout(()=>{saveDraft();updateCompletion(m.kind);requestFrameHeight(m.kind);},220);
   }
 });
 
-$$(".type-card").forEach(c=>c.addEventListener("click",()=>selectType(c.dataset.type)));
+$$(".type-card").forEach(c=>c.addEventListener("click",()=>{
+  if(state.mode!=="new") return;
+  selectType(c.dataset.type);
+}));
+$$('[data-mode]').forEach(c=>c.addEventListener("click",()=>setMode(c.dataset.mode)));
+
+$("#startNext").addEventListener("click",()=>{
+  if(state.mode==="new") showStep("type");
+});
+$("#sourceImportBtn").addEventListener("click",startBioImport);
 $("#typeNext").addEventListener("click",()=>showStep("bio"));
+
+$("#bioBack").addEventListener("click",()=>{
+  showStep(state.mode==="edit" ? "start" : "type");
+});
+
 $("#bioNext").addEventListener("click",()=>{
-  // Il cambio pagina avviene subito al primo click; la sincronizzazione segue subito dopo.
   saveDraft();
+  if(state.mode==="edit"){
+    const bio=runGenerator("bio");
+    if(!bio.ok){ showValidationIssues([{kind:"bio",result:bio}]); return; }
+    closeValidationIssues();
+    state.outputs.bio=bio.value;
+    state.outputs.values="";
+    renderReview();
+    showStep("review");
+    return;
+  }
   showStep("params");
   setTimeout(()=>syncFromBioToValues(true),0);
 });
+
 $("#valuesBack").addEventListener("click",()=>{
   if(state.type==="adult" && state.step==="wisdom") showStep("params");
   else showStep("bio");
 });
+
 $("#generateAll").addEventListener("click",()=>{
+  if(state.mode!=="new") return;
   if(state.type==="adult" && state.step==="params"){
     saveDraft();
     showStep("wisdom");
@@ -1418,34 +1691,63 @@ $("#generateAll").addEventListener("click",()=>{
     return;
   }
   closeValidationIssues();
-  state.outputs.bio=bio.value; state.outputs.values=vals.value;
-  renderReview(); showStep("review");
+  state.outputs.bio=bio.value;
+  state.outputs.values=vals.value;
+  renderReview();
+  showStep("review");
 });
-$("#reviewBackValues").addEventListener("click",()=>showStep(state.type==="adult"?"wisdom":"params"));
-$$("[data-go]").forEach(b=>b.addEventListener("click",()=>showStep(b.dataset.go)));
+
+$("#reviewBackValues").addEventListener("click",()=>{
+  if(state.mode==="edit") showStep("bio");
+  else showStep(state.type==="adult"?"wisdom":"params");
+});
+$("#reviewBackBio").addEventListener("click",()=>showStep("bio"));
+
 $$(".step-pill").forEach(p=>p.addEventListener("click",()=>{
   if(p.hidden) return;
   const target=p.dataset.step;
-  if(target==="review" && (!state.outputs.bio||!state.outputs.values)) return;
+  if(target==="review"){
+    const ready=state.mode==="edit" ? !!state.outputs.bio : (!!state.outputs.bio && !!state.outputs.values);
+    if(!ready) return;
+  }
   showStep(target);
 }));
+
 $("#copyAll").addEventListener("click",()=>copyText($("#combinedOutput").value));
 $("#copyBio").addEventListener("click",()=>copyText(state.outputs.bio));
 $("#copyValues").addEventListener("click",()=>copyText(state.outputs.values));
-$("#importBioBtn").addEventListener("click",openImport);
-$("#closeImport").addEventListener("click",closeImport);
-$("#runImport").addEventListener("click",runBioImport);
-$("#importModal").addEventListener("click",e=>{if(e.target.id==="importModal")closeImport()});
 $("#closeValidation").addEventListener("click",closeValidationIssues);
 $("#resetBtn").addEventListener("click",resetCurrent);
 
-document.addEventListener("keydown",e=>{if(e.key==="Escape" && $("#importModal").classList.contains("open")) closeImport();});
-
 const existing=draft();
-if(existing.selectedType && TYPE_KEYS.includes(existing.selectedType)){
-  selectType(existing.selectedType);
-  toast("Abbiamo ripreso i tuoi progressi");
+const savedMode=existing.selectedMode || (existing.selectedType ? "new" : null);
+if(savedMode==="new"){
+  setMode("new");
+  if(existing.selectedType && TYPE_KEYS.includes(existing.selectedType)){
+    // setMode() cancella selectedType soltanto per la nuova scelta iniziale: qui lo recuperiamo dalla copia letta prima.
+    state.mode="new";
+    selectType(existing.selectedType);
+    toast("Abbiamo ritrovato i tuoi progressi");
+  }
+}else if(savedMode==="edit" && existing.selectedType && TYPE_KEYS.includes(existing.selectedType)){
+  const savedType=existing.selectedType;
+  const bucket="edit_"+savedType;
+  if(existing[bucket] && existing[bucket].bio){
+    state.mode="edit";
+    $$("[data-mode]").forEach(c=>c.classList.toggle("selected",c.dataset.mode==="edit"));
+    const grid=$("#modeGrid"); if(grid) grid.classList.add("has-selection");
+    const box=$("#sourceImportBox"); if(box) box.hidden=false;
+    state.resumeAfterLoad=true;
+    selectType(savedType,{editImport:true});
+    toast("Abbiamo ripreso la Biografia che stavi modificando");
+  }else{
+    setMode("edit");
+  }
+}else{
+  updateJourneyChrome();
+  showStep("start");
 }
+
 })();
 </script>
 </body>

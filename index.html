@@ -1750,5 +1750,212 @@ if(savedMode==="new"){
 
 })();
 </script>
+  <script>
+(function(){
+
+    var TOOL_NAME = "scheda-pg";
+    var timer = null;
+    var lastHeight = 0;
+    var probe = null;
+
+
+    function createProbe(){
+
+        if(probe && document.body.contains(probe)){
+            return probe;
+        }
+
+        probe = document.createElement("div");
+
+        probe.id = "felix-tool-height-probe";
+        probe.setAttribute("aria-hidden", "true");
+
+        probe.style.cssText =
+            "display:block;" +
+            "position:relative;" +
+            "clear:both;" +
+            "width:100%;" +
+            "height:0;" +
+            "margin:0;" +
+            "padding:0;" +
+            "border:0;" +
+            "pointer-events:none;";
+
+        document.body.appendChild(probe);
+
+        return probe;
+    }
+
+
+    function getRealHeight(){
+
+        var marker = createProbe();
+
+        /*
+         * Il marker deve essere sempre l'ultimo elemento.
+         * Così misuriamo la fine REALE del contenuto,
+         * senza basarci sullo scrollHeight dell'iframe.
+         */
+        if(document.body.lastElementChild !== marker){
+            document.body.appendChild(marker);
+        }
+
+        var rect = marker.getBoundingClientRect();
+
+        var height = Math.ceil(
+            rect.top + window.pageYOffset
+        );
+
+        /*
+         * Tiene conto dell'eventuale padding inferiore
+         * applicato al body.
+         */
+        try{
+
+            var style = window.getComputedStyle(document.body);
+
+            var paddingBottom =
+                parseFloat(style.paddingBottom) || 0;
+
+            height += paddingBottom;
+
+        }catch(e){}
+
+        return Math.max(100, height);
+    }
+
+
+    function sendHeight(){
+
+        if(window.parent === window) return;
+
+        var height = getRealHeight();
+
+        /*
+         * Evita messaggi continui per differenze
+         * insignificanti di rendering.
+         */
+        if(Math.abs(height - lastHeight) < 3){
+            return;
+        }
+
+        lastHeight = height;
+
+        window.parent.postMessage(
+            {
+                tipo: "felix-tool-height",
+                tool: TOOL_NAME,
+                height: height
+            },
+            "*"
+        );
+    }
+
+
+    function scheduleHeight(){
+
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+
+            sendHeight();
+
+        }, 60);
+    }
+
+
+    /*
+     * Richiesta esplicita proveniente dall'iframe ForumFree.
+     */
+    window.addEventListener("message", function(event){
+
+        var data = event.data || {};
+
+        if(
+            data.tipo === "felix-tool-height-request" &&
+            (
+                !data.tool ||
+                data.tool === TOOL_NAME
+            )
+        ){
+            scheduleHeight();
+        }
+
+    });
+
+
+    /*
+     * Cambiamenti di dimensione del contenuto.
+     */
+    if(typeof ResizeObserver !== "undefined"){
+
+        var resizeObserver = new ResizeObserver(function(){
+            scheduleHeight();
+        });
+
+        resizeObserver.observe(document.body);
+
+    }
+
+
+    /*
+     * Cambi di schermata, campi, sezioni aperte/chiuse,
+     * messaggi di errore, risultati generati ecc.
+     */
+    if(typeof MutationObserver !== "undefined"){
+
+        var mutationObserver = new MutationObserver(function(){
+            scheduleHeight();
+        });
+
+        mutationObserver.observe(
+            document.body,
+            {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                characterData: false
+            }
+        );
+
+    }
+
+
+    /*
+     * Ulteriore controllo quando cambia la finestra.
+     */
+    window.addEventListener("resize", scheduleHeight);
+
+    window.addEventListener("load", function(){
+
+        scheduleHeight();
+
+        setTimeout(scheduleHeight, 100);
+        setTimeout(scheduleHeight, 350);
+        setTimeout(scheduleHeight, 900);
+        setTimeout(scheduleHeight, 1800);
+
+    });
+
+
+    /*
+     * Prima misurazione se lo script viene caricato
+     * quando il DOM è già disponibile.
+     */
+    if(document.readyState === "loading"){
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            scheduleHeight
+        );
+
+    }else{
+
+        scheduleHeight();
+
+    }
+
+})();
+</script>
 </body>
 </html>
